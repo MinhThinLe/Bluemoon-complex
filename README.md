@@ -10,4 +10,4 @@
 
 - Frontend: chờ quyết định
 - Backend: chờ quyết định
-- Cơ sở dữ liệu: chờ quyết định (có thể là SQLite)
+- Cơ sở dữ liệu: SQLite
