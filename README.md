@@ -10,4 +10,5 @@
 
 - Frontend: chờ quyết định
 - Backend: chờ quyết định
+- Backend: [Rust](https://rust-lang.org/) + [Tokio](https://tokio.rs/)
 - Cơ sở dữ liệu: SQLite
