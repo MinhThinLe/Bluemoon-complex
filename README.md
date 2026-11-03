@@ -10,4 +10,4 @@
 
 - Frontend: [React](react.dev)
 - Backend: [Rust](https://rust-lang.org/) + [Tokio](https://tokio.rs/)
-- Cơ sở dữ liệu: chờ quyết định (có thể là SQLite)
+- Cơ sở dữ liệu: SQLite
