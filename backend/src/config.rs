@@ -11,9 +11,17 @@ pub struct DatabaseConfig {
     path: PathBuf,
 }
 
+pub struct User {
+    username: String,
+    hashed_password: String,
+}
+
+struct Users(Vec<User>);
+
 pub struct Configuration {
     server_config: ServerConfig,
     database_config: DatabaseConfig,
+    default_users: Users,
 }
 
 impl TryFrom<&Table> for Configuration {
@@ -30,10 +38,12 @@ impl TryFrom<&Table> for Configuration {
 
         let server_table = get_table("server")?;
         let database_table = get_table("database")?;
+        let user_table = get_table("users")?;
 
         Ok(Self {
             server_config: server_table.try_into()?,
             database_config: database_table.try_into()?,
+            default_users: user_table.try_into()?,
         })
     }
 }
@@ -59,6 +69,24 @@ impl TryFrom<&Table> for ServerConfig {
                 .parse()
                 .map_err(|err| format!("Could not parse `server.listen_address` due to {err}"))?,
         })
+    }
+}
+
+impl TryFrom<&Table> for Users {
+    type Error = String;
+    fn try_from(value: &Table) -> Result<Self, Self::Error> {
+        // Holy hell, also good luck with the review
+        Ok(Users(
+            value
+                .iter()
+                .filter_map(|(key, value)| {
+                    value.as_str().map(|str| User {
+                        username: key.to_string(),
+                        hashed_password: str.to_string(),
+                    })
+                })
+                .collect(),
+        ))
     }
 }
 
@@ -112,5 +140,25 @@ mod test {
         let config = ServerConfig::try_from(&table);
 
         assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_users_parsing() {
+        const USERS_1: &str = r#"
+            admin = "this is hashed, trust me bro"
+            invalid = 1
+            admin2 = "skipped the guy above"
+        "#;
+
+        let table = USERS_1.parse::<Table>().unwrap();
+        let users = Users::try_from(&table).unwrap();
+
+        assert_eq!(users.0.len(), 2);
+
+        assert_eq!(users.0[0].username, "admin");
+        assert_eq!(users.0[0].hashed_password, "this is hashed, trust me bro");
+
+        assert_eq!(users.0[1].username, "admin2");
+        assert_eq!(users.0[1].hashed_password, "skipped the guy above");
     }
 }
