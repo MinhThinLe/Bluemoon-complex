@@ -1,3 +1,6 @@
+#![deny(clippy::pedantic, clippy::complexity, clippy::perf)]
+mod config;
+
 use std::net::SocketAddr;
 use std::str::FromStr;
 
