@@ -35,11 +35,12 @@ nhân viên/ban quản lý và người này không cư trú tại chung cư nà
 | name            | text         | not null                                    |
 | gender          | integer      | not null                                    |
 | date_of_birth   | text         | not null                                    |
+| move_in         | integer      | not null                                    |
+| move_out        | integer      |                                             |
 | spouse_of       | integer      | key -> [Self.id](#Residents)                |
 | child_of        | integer      | key -> [Self.id](#Residents)                |
 | apartment       | integer      | foreign key -> [Apartments.id](#Apartments) |
-| move_in         | integer      | not null                                    |
-| move_out        | integer      |                                             |
+
 **Lưu ý**: Residents và Users phải tách thành 2 bảng vì không phải cư dân nào
 cũng có nhu cầu sở hữu tài khoản (người già/trẻ em). Theo mô hình hiện tại thì
 cư dân nào có nhu cầu lập tài khoản thì sẽ làm việc với ban quản trị.
