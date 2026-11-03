@@ -34,7 +34,7 @@ nhân viên/ban quản lý và người này không cư trú tại chung cư nà
 | id              | integer      | primary key                                 |
 | name            | text         | not null                                    |
 | gender          | integer      | not null                                    |
-| date_of_birth   | text         | not null                                    |
+| date_of_birth   | integer      | not null                                    |
 | move_in         | integer      | not null                                    |
 | move_out        | integer      |                                             |
 | spouse_of       | integer      | key -> [Self.id](#Residents)                |
