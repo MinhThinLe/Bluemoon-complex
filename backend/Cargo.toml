@@ -21,4 +21,8 @@ toml = {
     default-features = false,
     features = [ "parse", "serde" ]
 }
+rusqlite = {
+    version = "0.41.1",
+    default-features = false,
+}
 log = "0.4.35"
