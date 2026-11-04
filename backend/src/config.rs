@@ -63,7 +63,7 @@ impl TryFrom<&Table> for DatabaseConfig {
         match path.try_exists() {
             Ok(true) => (),
             Ok(false) => {
-                warn!("`database.path` does not exist on the filesystem, creating a new database",)
+                warn!("`database.path` does not exist on the filesystem, creating a new database");
             }
             Err(err) => Err(format!("Unable to read from the filesystem due to {err}"))?,
         }

@@ -29,9 +29,9 @@ impl Database {
     }
 
     pub async fn add_admin_users(&self, users: &[User]) {
-        const INSERT_QUERY: &str = r#"
+        const INSERT_QUERY: &str = "
             INSERT OR IGNORE INTO Users (username, display_name, hashed_password, salt, role_id) values (?, ?, ?, ?, ?);
-            "#;
+            ";
 
         let database = self.connection.lock().await;
         let admin_role_id: u32 = database
