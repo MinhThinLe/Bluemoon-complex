@@ -1,7 +1,12 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::process::exit;
 
+use log::{error, info};
+use tokio::fs;
 use toml::Table;
+
+use crate::logger::Logger;
 
 pub struct ServerConfig {
     listen_address: SocketAddr,
@@ -88,6 +93,63 @@ impl TryFrom<&Table> for Users {
                 .collect(),
         ))
     }
+}
+
+impl Configuration {
+    pub async fn init() -> Self {
+        if let Err(e) = log::set_logger(&Logger)
+            .map(|()| log::set_max_level(Logger::level().unwrap_or_else(|| exit(0))))
+        {
+            eprintln!("Failed to initialize the logging system due to {e}");
+        }
+
+        info!("Log level is set to {}", log::max_level());
+
+        let config_path = get_config_path();
+
+        let Ok(content) = fs::read_to_string(&config_path).await else {
+            error!(
+                "Unable to read config content from {}",
+                config_path.display()
+            );
+            exit(1);
+        };
+
+        let table: Table = match content.parse() {
+            Ok(table) => table,
+            Err(message) => {
+                error!("{message}");
+                exit(1)
+            }
+        };
+
+        match Configuration::try_from(&table) {
+            Ok(config) => config,
+            Err(message) => {
+                error!("{message}");
+                exit(1)
+            }
+        }
+    }
+}
+
+fn get_config_path() -> PathBuf {
+    const CONFIG_FILE_LOCATION: &str = "--config-file";
+    let commandline_args: Vec<String> = std::env::args().collect();
+
+    let Some(index) = commandline_args
+        .iter()
+        .position(|item| item == CONFIG_FILE_LOCATION)
+    else {
+        return PathBuf::from("/etc/bluemoon/config.toml"); // Won't work on Windows btw
+    };
+
+    let Some(item) = commandline_args.get(index + 1) else {
+        error!("The --config-file flag must be followed by a path");
+        exit(1);
+    };
+
+    PathBuf::from(item)
 }
 
 fn get_string<'table>(table: &'table Table, key: &'table str) -> Result<&'table str, &'static str> {
