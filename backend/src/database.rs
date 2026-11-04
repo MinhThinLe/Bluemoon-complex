@@ -1,14 +1,22 @@
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
-use rusqlite::Connection;
+use rusqlite::{Connection, params};
 use tokio::sync::Mutex;
 
-use crate::config::{DatabaseConfig, User};
+use crate::{authentication::PrivilegeLevel, config::DatabaseConfig};
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
+#[derive(Clone, Debug)]
 pub struct Database {
     connection: Arc<Mutex<Connection>>,
+}
+
+pub struct User {
+    pub username: String,
+    pub hashed_password: String,
+    pub salt: String,
+    pub role: PrivilegeLevel,
 }
 
 const INIT_TABLES: &str = include_str!("../sql/init_tables.sql");
@@ -52,6 +60,25 @@ impl Database {
                 ))
                 .expect("Failed to add an admin");
         }
+    }
+
+    pub async fn get_user(&self, username: &str) -> Option<User> {
+        const QUERY: &str = "select username, hashed_password, salt, Roles.name from Users join Roles on Roles.id = Users.role_id where username = (?);";
+
+        let database = self.connection.lock().await;
+
+        let mut query = database.prepare(QUERY).expect("Invalid SQL");
+        query
+            .query_one(params![username], |row| {
+                Ok(User {
+                    username: row.get(0)?,
+                    hashed_password: row.get(1)?,
+                    salt: row.get(2)?,
+                    role: PrivilegeLevel::from_str(&row.get::<_, String>(3)?)
+                        .expect("Invalid previledge stored in database"),
+                })
+            })
+            .ok()
     }
 }
 
