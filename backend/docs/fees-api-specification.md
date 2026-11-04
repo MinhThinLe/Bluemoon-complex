@@ -17,6 +17,7 @@
 
 ## 3.Phân quyền
 | Chức năng | Management | Resident |
+|-----------|------------|----------|
 | Xem danh sách loại phí | x | x |
 | Xem danh sách tất cả khoản phí | x |  |
 | Xem chi tiết khoản phí | x | Chỉ căn hộ mình |
@@ -30,6 +31,7 @@
     + {id} đại diện cho ID của tài nguyên cần truy cập
 - API quản lí FeeTypes
 | Method | Endpoint              | Chức năng                           |
+|--------|-----------------------|-------------------------------------|
 | GET    | `/api/fee-types`      | Lấy danh sách loại phí              |
 | GET    | `/api/fee-types/{id}` | Lấy thông tin chi tiết một loại phí |
 | POST   | `/api/fee-types`      | Tạo loại phí mới                    |
@@ -38,6 +40,7 @@
 
 - API quản lí Fees
 | Method | Endpoint              | Chức năng                           |
+|--------|-----------------------|-------------------------------------|
 | GET    | `/api/fees`           | Lấy danh sách tất cả khoản phí      |
 | GET    | `/api/fees/{id}`      | Lấy thông tin chi tiết khoản phí    |
 | POST   | `/api/fees`           | Tạo khoản phí mới                   |
@@ -46,6 +49,7 @@
 
 - API tra cứu khoản phí
 | Method | Endpoint                      | Chức năng                      | 
+|--------|-------------------------------|--------------------------------|
 | GET    | `/api/fees?apartment_id={id}` | Lọc khoản phí theo căn hộ      | 
 | GET    | `/api/fees?fee_type_id={id}`  | Lọc khoản phí theo loại phí    | 
 | GET    | `/api/fees?paid={status}`     | Lọc theo trạng thái thanh toán | 
@@ -53,10 +57,12 @@
 
 - API cập nhật thanh toán
 | Method | Endpoint                        | Chức năng                      |
+|--------|---------------------------------|--------------------------------|
 | PATCH  | `/api/fees/{id}/payment-status` | Cập nhật trạng thái thanh toán |
 
 ## 5.Quy định mã trạng thái http trả về 
 | HTTP Status Code | Tên | Ý nghĩa |
+|---|---|---|
 | 200 | OK | Request được xử lý thành công. |
 | 201 | Created | Tạo tài nguyên mới thành công. |
 | 204 | No Content | Request thành công, không có dữ liệu trả về. Thường dùng khi xóa tài nguyên. |
