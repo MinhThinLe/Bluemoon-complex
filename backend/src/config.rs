@@ -1,8 +1,8 @@
-use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::process::exit;
+use std::{net::SocketAddr, ops::Deref};
 
-use log::{error, info};
+use log::{error, info, warn};
 use tokio::fs;
 use toml::Table;
 
@@ -13,20 +13,20 @@ pub struct ServerConfig {
 }
 
 pub struct DatabaseConfig {
-    path: PathBuf,
+    pub path: PathBuf,
 }
 
 pub struct User {
-    username: String,
-    hashed_password: String,
+    pub username: String,
+    pub hashed_password: String,
 }
 
-struct Users(Vec<User>);
+pub struct Users(Vec<User>);
 
 pub struct Configuration {
-    server_config: ServerConfig,
-    database_config: DatabaseConfig,
-    default_users: Users,
+    pub server_config: ServerConfig,
+    pub database_config: DatabaseConfig,
+    pub default_users: Users,
 }
 
 impl TryFrom<&Table> for Configuration {
@@ -62,8 +62,10 @@ impl TryFrom<&Table> for DatabaseConfig {
         let path = PathBuf::from(path);
         match path.try_exists() {
             Ok(true) => (),
-            Ok(false) => error!("`database.path` does not exist on the filesystem"),
-            Err(err) => error!("Unable to read from the filesystem due to {err}"),
+            Ok(false) => {
+                warn!("`database.path` does not exist on the filesystem, creating a new database",)
+            }
+            Err(err) => Err(format!("Unable to read from the filesystem due to {err}"))?,
         }
 
         Ok(Self { path })
@@ -99,6 +101,13 @@ impl TryFrom<&Table> for Users {
                 })
                 .collect(),
         ))
+    }
+}
+
+impl Deref for Users {
+    type Target = [User];
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

@@ -14,7 +14,10 @@
                     rust-analyzer
                     rustc
                     rustfmt
+                    sqlite
                 ];
+
+
             };
         }) nixpkgs.legacyPackages;
     };
