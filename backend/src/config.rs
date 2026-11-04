@@ -59,7 +59,14 @@ impl TryFrom<&Table> for DatabaseConfig {
         let path =
             get_string(value, "path").map_err(|reason| format!("`database.path` {reason}"))?;
 
-        Ok(Self { path: path.into() })
+        let path = PathBuf::from(path);
+        match path.try_exists() {
+            Ok(true) => (),
+            Ok(false) => error!("`database.path` does not exist on the filesystem"),
+            Err(err) => error!("Unable to read from the filesystem due to {err}"),
+        }
+
+        Ok(Self { path })
     }
 }
 
@@ -86,7 +93,7 @@ impl TryFrom<&Table> for Users {
                 .iter()
                 .filter_map(|(key, value)| {
                     value.as_str().map(|str| User {
-                        username: key.to_string(),
+                        username: key.clone(),
                         hashed_password: str.to_string(),
                     })
                 })
