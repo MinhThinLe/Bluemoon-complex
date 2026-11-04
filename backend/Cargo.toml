@@ -21,3 +21,4 @@ toml = {
     default-features = false,
     features = [ "parse", "serde" ]
 }
+log = "0.4.35"
