@@ -4,13 +4,21 @@
 
 API được thiết kế theo kiến trúc [REST](https://en.wikipedia.org/wiki/REST). Dùng HTTP GET để lấy dữ liệu và POST để gửi dữ liệu.
 
+Mọi yêu cầu để được coi là hợp lệ, phải được đi kèm với một cookie `Session-Token` hợp lệ. Về cách để nhận cookie này, liên hệ tài liệu [Hướng dẫn đăng nhập](./authentication-guide.md). Trường hợp một yêu cầu không hợp lệ được gửi, nó sẽ nhận lại phản hồi như được quy định trong tài liệu hướng dẫn đăng nhập đã đề cập đến ở trên.
+
+# Phân cấp
+
+Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
+
+`Admin` > `Accountant` > `Resident`
+
 **Cheat sheet**
 
-| Base URL                                | Loại yêu cầu | Mô tả                        |
-| --------------------------------------- | ------------ | ---------------------------- |
-| [`/api/new/fee-type`](#Tạo-khoản-phí)   | POST         | Tạo loại khoản phí mới       |
-| [`/api/fee-types`](#Lấy-loại-khoản-phí) | GET          | Lấy danh sách loại khoản phí |
-| [`/api/new/fee`](#Tạo-khoản-phí)        | POST         | Tạo khoản phí mới            |
+| Base URL                                | Loại yêu cầu | Mô tả                        | Yêu cầu quyền |
+| --------------------------------------- | ------------ | ---------------------------- | ------------- |
+| [`/api/new/fee-type`](#Tạo-khoản-phí)   | POST         | Tạo loại khoản phí mới       | `Admin`       |
+| [`/api/fee-types`](#Lấy-loại-khoản-phí) | GET          | Lấy danh sách loại khoản phí | `Accountant`  |
+| [`/api/new/fee`](#Tạo-khoản-phí)        | POST         | Tạo khoản phí mới            | `Admin`       |
 
 # Ký pháp
 
@@ -44,9 +52,9 @@ API được thiết kế theo kiến trúc [REST](https://en.wikipedia.org/wiki
 
 ## Bảng kiểu dữ liệu
 
-| Tên trường | Kiểu dữ liệu | Ví dụ                 |
-| ---------- | ------------ | --------------------- |
-| `fee-type` | `string`     | "Phí quản lý 10/2026" |
+| Tên trường | Kiểu dữ liệu | Ví dụ                 | Ghi chú                               |
+| ---------- | ------------ | --------------------- | ------------------------------------- |
+| `fee-type` | `string`     | "Phí quản lý 10/2026" | Phải chưa tồn tại trong cơ sở dữ liệu |
 
 ## Thành công
 
@@ -96,13 +104,12 @@ Nếu yêu cầu hợp lệ, JSON sau sẽ được trả về
 ## Thành công
 
 Máy chủ trả về HTTP 200 OK với nội dung JSON trên nếu
-- Người dùng đã đã xác thực với tư cách `Admin`
+- Người dùng đã đã xác thực với tư cách `Accountant` hoặc cao hơn .
 
 ## Thất bại
 
 Máy chủ trả về HTTP 403 Forbidden nếu
-- Người dùng đã xác thực nhưng không phải với tư cách `Admin`
-
+- Người dùng đã xác thực nhưng không phải với tư cách thấp hơn `Accountant`
 
 # Tạo khoản phí
 
@@ -115,7 +122,7 @@ Máy chủ trả về HTTP 403 Forbidden nếu
     "amount": 1234,
     "for": "all",
     "type": 1,
-    "optional": false,
+    "optional": false
 }
 ```
 
@@ -135,6 +142,7 @@ Máy chủ trả về HTTP 200 OK nếu
 - `amount` dương
 - Tất cả mọi phần tử trong `for` đều là id căn hộ hợp lệ nếu `for` thuộc kiểu mảng
 - `type` tồn tại trong danh sách kiểu phí
+- Người dùng đã xác thực với tư cách `Admin`
 
 ## Thất bại
 

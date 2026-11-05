@@ -54,5 +54,7 @@ CREATE TABLE IF NOT EXISTS Fees (
     paid BOOLEAN NOT NULL,
     optional BOOLEAN NOT NULL,
     apartment_id INTEGER NOT NULL,
-    FOREIGN KEY (apartment_id) REFERENCES Apartments(apartment_id)
+    type_id INTEGER NOT NULL,
+    FOREIGN KEY (apartment_id) REFERENCES Apartments(apartment_id),
+    FOREIGN KEY (type_id) REFERENCES FeeTypes(id)
 );
