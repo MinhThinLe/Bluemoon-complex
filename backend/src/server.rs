@@ -38,14 +38,14 @@ impl Server {
             .await;
     }
 
-    pub fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         self.clone()
             .protected_hello()
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
 
-    pub fn protected_hello(
+    fn protected_hello(
         self,
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         method::get()
@@ -71,11 +71,7 @@ impl Server {
             .and_then(Self::request_authentication_handle)
     }
 
-    #[allow(
-        clippy::unused_async,
-        reason = "Removing async causes a trait bound error"
-    )]
-    pub async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
+    async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
         let reply_content = html("SIGN IN");
         let reply = with_status(reply_content, StatusCode::UNAUTHORIZED);
         let reply = with_header(reply, "WWW-Authenticate", "Basic, charset=\"UTF-8\"");
@@ -83,7 +79,7 @@ impl Server {
         ready(Ok(reply)).await
     }
 
-    pub async fn protected_hello_handle(
+    async fn protected_hello_handle(
         self,
         _privilege: PrivilegeLevel,
     ) -> Result<impl Reply, Infallible> {
@@ -96,7 +92,7 @@ impl Server {
             .and_then(Self::extract_token)
     }
 
-    pub fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
+    fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
         warp::any().map(move || self.clone())
     }
 
