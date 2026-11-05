@@ -6,19 +6,16 @@ use log::{error, info, warn};
 use tokio::fs;
 use toml::Table;
 
+use crate::database::User;
 use crate::logger::Logger;
 
+#[derive(Clone, Debug)]
 pub struct ServerConfig {
-    listen_address: SocketAddr,
+    pub listen_address: SocketAddr,
 }
 
 pub struct DatabaseConfig {
     pub path: PathBuf,
-}
-
-pub struct User {
-    pub username: String,
-    pub hashed_password: String,
 }
 
 pub struct Users(Vec<User>);
@@ -97,6 +94,8 @@ impl TryFrom<&Table> for Users {
                     value.as_str().map(|str| User {
                         username: key.clone(),
                         hashed_password: str.to_string(),
+                        salt: String::new(),
+                        role: crate::authentication::PrivilegeLevel::Admin,
                     })
                 })
                 .collect(),
