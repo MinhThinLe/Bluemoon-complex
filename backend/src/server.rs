@@ -7,10 +7,12 @@ use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
 use warp::reject::Rejection;
-use warp::reply::{Reply, html};
+use warp::reply::{Reply, html, with_header, with_status};
 use warp::{Filter, path};
 
-use crate::authentication::{AuthenticatedUsers, AuthenticationToken};
+use crate::authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel,
+};
 use crate::config::ServerConfig;
 use crate::database::Database;
 
@@ -36,14 +38,14 @@ impl Server {
             .await;
     }
 
-    pub fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         self.clone()
             .protected_hello()
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
 
-    pub fn protected_hello(
+    fn protected_hello(
         self,
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         method::get()
@@ -69,12 +71,7 @@ impl Server {
             .and_then(Self::request_authentication_handle)
     }
 
-    #[allow(
-        clippy::unused_async,
-        reason = "Removing async causes a trait bound error"
-    )]
-    pub async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
-        use warp::reply::{with_header, with_status};
+    async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
         let reply_content = html("SIGN IN");
         let reply = with_status(reply_content, StatusCode::UNAUTHORIZED);
         let reply = with_header(reply, "WWW-Authenticate", "Basic, charset=\"UTF-8\"");
@@ -82,29 +79,27 @@ impl Server {
         ready(Ok(reply)).await
     }
 
-    pub async fn protected_hello_handle(
+    async fn protected_hello_handle(
         self,
-        _auth_token: AuthenticationToken,
+        _privilege: PrivilegeLevel,
     ) -> Result<impl Reply, Infallible> {
         ready(Ok(warp::reply::html("Protected Hello world"))).await
     }
 
-    fn auth_token(
-        self,
-    ) -> impl Filter<Extract = (AuthenticationToken,), Error = Rejection> + Clone {
+    fn auth_token(self) -> impl Filter<Extract = (PrivilegeLevel,), Error = Rejection> + Clone {
         self.inject()
             .and(cookie("Session-Token"))
             .and_then(Self::extract_token)
     }
 
-    pub fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
+    fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
         warp::any().map(move || self.clone())
     }
 
-    async fn extract_token(self, token: String) -> Result<AuthenticationToken, Rejection> {
-        // Query the database and shits here
-
-        // Stops clippy from complaining
-        ready(Ok(AuthenticationToken::new(&token))).await
+    async fn extract_token(self, token: String) -> Result<PrivilegeLevel, Rejection> {
+        self.users
+            .authenticated_as(AuthenticationToken::new(&token))
+            .await
+            .ok_or_else(|| Rejection::from(NoSessionToken))
     }
 }

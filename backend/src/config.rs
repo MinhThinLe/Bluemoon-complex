@@ -1,9 +1,12 @@
+use std::net::SocketAddr;
+use std::ops::Deref;
 use std::path::PathBuf;
 use std::process::exit;
-use std::{net::SocketAddr, ops::Deref};
 
 use log::{error, info, warn};
+
 use tokio::fs;
+
 use toml::Table;
 
 use crate::database::User;

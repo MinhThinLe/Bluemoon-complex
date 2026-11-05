@@ -1,9 +1,17 @@
-use std::{collections::HashMap, convert::Infallible, str::FromStr, sync::Arc};
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::str::FromStr;
+use std::sync::Arc;
 
 use base64::Engine;
+
 use http::StatusCode;
+
 use sha2::{Digest, Sha256};
+
 use tokio::sync::RwLock;
+
+use warp::reject::Reject;
 use warp::reply::{Reply, Response, html, with_header, with_status};
 
 use crate::server::Server;
@@ -11,6 +19,7 @@ use crate::server::Server;
 #[derive(Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
 
+#[derive(Clone, Copy, Debug)]
 pub enum PrivilegeLevel {
     Resident,
     Accountant,
@@ -27,11 +36,20 @@ pub struct AuthenticatedUsers {
     tokens: Arc<RwLock<HashMap<AuthenticationToken, PrivilegeLevel>>>,
 }
 
+#[derive(Debug)]
+pub struct NoSessionToken;
+
+impl Reject for NoSessionToken {}
+
 impl AuthenticatedUsers {
     pub fn new() -> Self {
         Self {
             tokens: Arc::new(RwLock::new(HashMap::new())),
         }
+    }
+
+    pub async fn authenticated_as(&self, token: AuthenticationToken) -> Option<PrivilegeLevel> {
+        self.tokens.read().await.get(&token).copied()
     }
 }
 

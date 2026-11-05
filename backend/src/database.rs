@@ -1,9 +1,11 @@
-use std::{str::FromStr, sync::Arc};
+use std::str::FromStr;
+use std::sync::Arc;
 
 use rusqlite::{Connection, params};
 use tokio::sync::Mutex;
 
-use crate::{authentication::PrivilegeLevel, config::DatabaseConfig};
+use crate::authentication::PrivilegeLevel;
+use crate::config::DatabaseConfig;
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
