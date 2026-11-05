@@ -1,13 +1,18 @@
-use std::{collections::HashMap, convert::Infallible, str::FromStr, sync::Arc};
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::str::FromStr;
+use std::sync::Arc;
 
 use base64::Engine;
+
 use http::StatusCode;
+
 use sha2::{Digest, Sha256};
+
 use tokio::sync::RwLock;
-use warp::{
-    reject::Reject,
-    reply::{Reply, Response, html, with_header, with_status},
-};
+
+use warp::reject::Reject;
+use warp::reply::{Reply, Response, html, with_header, with_status};
 
 use crate::server::Server;
 
