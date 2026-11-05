@@ -7,10 +7,12 @@ use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
 use warp::reject::Rejection;
-use warp::reply::{Reply, html};
+use warp::reply::{Reply, html, with_header, with_status};
 use warp::{Filter, path};
 
-use crate::authentication::{AuthenticatedUsers, AuthenticationToken};
+use crate::authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel,
+};
 use crate::config::ServerConfig;
 use crate::database::Database;
 
@@ -74,7 +76,6 @@ impl Server {
         reason = "Removing async causes a trait bound error"
     )]
     pub async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
-        use warp::reply::{with_header, with_status};
         let reply_content = html("SIGN IN");
         let reply = with_status(reply_content, StatusCode::UNAUTHORIZED);
         let reply = with_header(reply, "WWW-Authenticate", "Basic, charset=\"UTF-8\"");
@@ -84,14 +85,12 @@ impl Server {
 
     pub async fn protected_hello_handle(
         self,
-        _auth_token: AuthenticationToken,
+        _privilege: PrivilegeLevel,
     ) -> Result<impl Reply, Infallible> {
         ready(Ok(warp::reply::html("Protected Hello world"))).await
     }
 
-    fn auth_token(
-        self,
-    ) -> impl Filter<Extract = (AuthenticationToken,), Error = Rejection> + Clone {
+    fn auth_token(self) -> impl Filter<Extract = (PrivilegeLevel,), Error = Rejection> + Clone {
         self.inject()
             .and(cookie("Session-Token"))
             .and_then(Self::extract_token)
@@ -101,10 +100,10 @@ impl Server {
         warp::any().map(move || self.clone())
     }
 
-    async fn extract_token(self, token: String) -> Result<AuthenticationToken, Rejection> {
-        // Query the database and shits here
-
-        // Stops clippy from complaining
-        ready(Ok(AuthenticationToken::new(&token))).await
+    async fn extract_token(self, token: String) -> Result<PrivilegeLevel, Rejection> {
+        self.users
+            .authenticated_as(AuthenticationToken::new(&token))
+            .await
+            .ok_or_else(|| Rejection::from(NoSessionToken))
     }
 }
