@@ -3,6 +3,7 @@
 mod authentication;
 mod config;
 mod database;
+mod handles;
 mod logger;
 mod server;
 

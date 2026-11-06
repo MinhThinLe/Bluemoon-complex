@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::future::ready;
 
@@ -15,6 +16,9 @@ use crate::authentication::{
 };
 use crate::config::ServerConfig;
 use crate::database::Database;
+use crate::handles::FeeType;
+
+const API_ROOT_URL: &str = "api";
 
 #[derive(Clone)]
 pub struct Server {
@@ -41,13 +45,25 @@ impl Server {
     fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         self.clone()
             .protected_hello()
+            .or(self.clone().new_fee_type())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
 
-    fn protected_hello(
-        self,
-    ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    fn new_fee_type(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::post()
+            .and(path(API_ROOT_URL))
+            .and(path!("new" / "fee-type"))
+            // .and(warp::body::content_length_limit(1024))
+            .and(warp::body::json().map(|json: HashMap<String, String>| FeeType::try_from(json)))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|fee_type, server: Server, privilege_level| {
+                server.new_fee_type_handle(privilege_level, fee_type)
+            })
+    }
+
+    fn protected_hello(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         method::get()
             .and(path!("hello"))
             .and(self.clone().inject())

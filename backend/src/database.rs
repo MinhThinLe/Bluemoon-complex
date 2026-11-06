@@ -6,6 +6,7 @@ use tokio::sync::Mutex;
 
 use crate::authentication::PrivilegeLevel;
 use crate::config::DatabaseConfig;
+use crate::handles::FeeType;
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
@@ -81,6 +82,16 @@ impl Database {
                 })
             })
             .ok()
+    }
+
+    pub async fn add_fee_type(&self, fee_type: FeeType) -> Result<(), ()> {
+        const QUERY: &str = "insert into FeeTypes (name) values (?)";
+
+        let database = self.connection.lock().await;
+        database
+            .execute(QUERY, params![fee_type.name])
+            .map(|_| ())
+            .map_err(|_| ())
     }
 }
 
