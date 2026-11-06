@@ -45,6 +45,7 @@ impl Server {
     fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         self.clone()
             .new_fee_type()
+            .or(self.clone().get_fee_types())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
@@ -60,6 +61,15 @@ impl Server {
             .and_then(|fee_type, server: Server, privilege_level| {
                 server.new_fee_type_handle(privilege_level, fee_type)
             })
+    }
+
+    fn get_fee_types(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("fee-types"))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(Self::get_fee_types_handle)
     }
 
     fn process_authentication(

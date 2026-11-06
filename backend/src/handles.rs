@@ -1,13 +1,20 @@
 use std::collections::HashMap;
 
 use http::StatusCode;
+
+use serde::Serialize;
+
+use serde_json::json;
+
 use warp::reject::{Reject, Rejection};
-use warp::reply::{Reply, html, with_status};
+use warp::reply::{Reply, html, json, with_status};
 
 use crate::Server;
 use crate::authentication::{PrivilegeLevel, UnderAuthenticated};
 
+#[derive(Serialize)]
 pub struct FeeType {
+    pub id: u32,
     pub name: String,
 }
 
@@ -23,7 +30,10 @@ impl TryFrom<HashMap<String, String>> for FeeType {
     fn try_from(value: HashMap<String, String>) -> Result<Self, Self::Error> {
         let name = value.get("name").ok_or(InvalidFeeType::NoNameKey)?;
 
-        Ok(Self { name: name.clone() })
+        Ok(Self {
+            id: 0,
+            name: name.clone(),
+        })
     }
 }
 
@@ -47,5 +57,23 @@ impl Server {
                 StatusCode::BAD_REQUEST,
             )),
         }
+    }
+
+    pub async fn get_fee_types_handle(
+        self,
+        privilege: PrivilegeLevel,
+    ) -> Result<impl Reply, Rejection> {
+        if privilege < PrivilegeLevel::Accountant {
+            Err(UnderAuthenticated)?;
+        }
+
+        let Ok(fee_types) = self.database.get_all_fee_types().await else {
+            return Ok(with_status(
+                json(&json!({ "error": "Failed to query the database" })),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ));
+        };
+
+        Ok(with_status(json(&fee_types), StatusCode::OK))
     }
 }
