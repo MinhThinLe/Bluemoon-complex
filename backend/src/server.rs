@@ -44,8 +44,7 @@ impl Server {
 
     fn end_points(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         self.clone()
-            .protected_hello()
-            .or(self.clone().new_fee_type())
+            .new_fee_type()
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
@@ -61,14 +60,6 @@ impl Server {
             .and_then(|fee_type, server: Server, privilege_level| {
                 server.new_fee_type_handle(privilege_level, fee_type)
             })
-    }
-
-    fn protected_hello(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-        method::get()
-            .and(path!("hello"))
-            .and(self.clone().inject())
-            .and(self.clone().auth_token())
-            .and_then(Self::protected_hello_handle)
     }
 
     fn process_authentication(
@@ -93,13 +84,6 @@ impl Server {
         let reply = with_header(reply, "WWW-Authenticate", "Basic, charset=\"UTF-8\"");
 
         ready(Ok(reply)).await
-    }
-
-    async fn protected_hello_handle(
-        self,
-        _privilege: PrivilegeLevel,
-    ) -> Result<impl Reply, Infallible> {
-        ready(Ok(warp::reply::html("Protected Hello world"))).await
     }
 
     fn auth_token(self) -> impl Filter<Extract = (PrivilegeLevel,), Error = Rejection> + Clone {
