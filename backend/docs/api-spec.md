@@ -173,10 +173,12 @@ Không sử dụng
 
 ## Thân yêu cầu
 
-| Tên trường | Kiểu dữ liệu | Ghi chú         |
-| ---------- | -----------  | --------------- |
-| `id`       | `integer`    | Phải đã tồn tại |
-| `name`     | `string`     |                 |
+| Tên trường    | Kiểu dữ liệu | Ghi chú         |
+| ------------- | -----------  | --------------- |
+| `id`          | `integer`    | Phải đã tồn tại |
+| `name`        | `string`     | Tùy chọn        |
+| `paid`        | `bool`       | Tùy chọn        |
+| `is_optional` | `bool`       | Tùy chọn        |
 
 ## Thất bại
 
