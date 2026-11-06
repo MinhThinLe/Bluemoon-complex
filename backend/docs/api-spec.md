@@ -31,6 +31,7 @@ Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 | `integer`          | Số nguyên số bù 2                  |
 | `bool`             | Giá trị trong đại số Bool          |
 | \[`kiểu dữ liệu`\] | Mảng một chiều chứa `kiểu dữ liệu` |
+| `{ key: type }`    | Từ điển với khóa và kiểu của khóa  |
 
 ## Ký pháp khác
 
@@ -42,43 +43,65 @@ Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 
 ## Yêu cầu
 
-Để tạo một loại khoản phí mới, gửi một yêu cầu POST đến `/api/new/fee-type` với nội dung JSON như sau:
+| Trường       | Thông tin                       |
+| ------       | ---------                       |
+| Mức xác thực | `Admin`                         |
+| Phương thức  | `POST`                          |
+| Endpoint     | `/api/new/fee-type`             |
+
+## Thân yêu cầu
+
+| Tên trường | Kiểu dữ liệu | Ghi chú                               |
+| ---------- | ------------ | ------------------------------------- |
+| `fee-type` | `string`     | Phải chưa tồn tại trong cơ sở dữ liệu |
+
+**Ví dụ**:
 
 ```json
 {
-    "fee-type": "tên khoản phí"
+    "fee-type": "Tên khoản phí"
 }
 ```
 
-## Bảng kiểu dữ liệu
-
-| Tên trường | Kiểu dữ liệu | Ví dụ                 | Ghi chú                               |
-| ---------- | ------------ | --------------------- | ------------------------------------- |
-| `fee-type` | `string`     | "Phí quản lý 10/2026" | Phải chưa tồn tại trong cơ sở dữ liệu |
-
-## Thành công
-
-Máy chủ trả về HTTP 200 OK nếu
-- JSON được gửi hợp lệ và đúng định dạng như đã định nghĩa trên.
-- `"tên khoản phí"` chưa tồn tại (đối với các khoản phí thường niên, thêm ngày/tháng vào cuối tên).
-- Người thực hiện yêu cầu đã xác thực như `Admin`.
-
 ## Thất bại
 
-Máy chủ sẽ trả về
-- HTTP 400 Bad Request nếu JSON không hợp lệ hoặc không theo đúng định dạng đã định nghĩa trên.
-- HTTP 400 Bad Request nếu `"tên khoản phí"` đã tồn tại.
-- HTTP 403 Forbidden nếu người dùng đã xác thực nhưng không phải với tư cách `Admin`
+| Lý do thất bại            | Phản hồi |
+| --------------            | -------- |
+| Mức xác thực dưới `Admin` | HTTP 403 |
+| JSON không hợp lệ         | HTTP 400 |
+| `fee-type` đã tồn tại     | HTTP 400 |
 
-# Lấy loại khoản phí
+## Thân phản hồi
+
+Không sử dụng
+
+# Lấy loại khoản thu
 
 ## Yêu cầu
 
-Để lấy danh sách các loại khoản phí đã được định nghĩa trong máy chủ, gửi yêu cầu GET đến `/api/fee-types`.
+| Trường       | Thông tin                            |
+| ------       | ---------                            |
+| Mức xác thực | `Accountant`                         |
+| Phương thức  | `GET`                                |
+| Endpoint     | `/api/fee-types`                     |
 
-## Trả về
+## Thân yêu cầu
 
-Nếu yêu cầu hợp lệ, JSON sau sẽ được trả về
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại                     | Phản hồi |
+| --------------                     | -------- |
+| Mức xác thực thấp hơn `Accountant` | HTTP 403 |
+
+## Thân phản hồi
+
+| Tên trường  | Kiểu dữ liệu                      |
+| ----------  | ------------                      |
+| `fee-types` | `[{ id: integer, name: string }]`  |
+
+**Ví dụ**:
 
 ```json
 {
@@ -95,27 +118,26 @@ Nếu yêu cầu hợp lệ, JSON sau sẽ được trả về
 }
 ```
 
-**Bảng kiểu dữ liệu**
-
-| Tên trường  | Kiểu dữ liệu |
-| ----------  | ------------ |
-| `fee-types` | `[FeeType]`  |
-
-## Thành công
-
-Máy chủ trả về HTTP 200 OK với nội dung JSON trên nếu
-- Người dùng đã đã xác thực với tư cách `Accountant` hoặc cao hơn .
-
-## Thất bại
-
-Máy chủ trả về HTTP 403 Forbidden nếu
-- Người dùng đã xác thực nhưng không phải với tư cách thấp hơn `Accountant`
-
-# Tạo khoản phí
+# Tạo khoản thu
 
 ## Yêu cầu
 
-Để tạo một khoản phí mới, gửi một yêu cầu POST đến `/api/new/fee` với nội dung JSON như sau:
+| Trường       | Thông tin      |
+| ------       | ---------      |
+| Mức xác thực | `Admin`        |
+| Phương thức  | `POST`         |
+| Endpoint     | `/api/new/fee` |
+
+## Thân yêu cầu
+
+| Tên trường | Kiểu dữ liệu         | Ghi chú                    |
+| ---------- | -------------------- | --------------             |
+| `amount`   | `number`             | > 0                        |
+| `for`      | "all" / \[`number`\] | Phải là id căn hộ hợp lệ   |
+| `type`     | `number`             | Phải là id loại phí hợp lệ |
+| `optional` | `bool`               |                            |
+
+**Ví dụ**:
 
 ```json
 {
@@ -126,28 +148,15 @@ Máy chủ trả về HTTP 403 Forbidden nếu
 }
 ```
 
-## Bảng kiểu dữ liệu
-
-| Tên trường | Kiểu dữ liệu         | Ví dụ          |
-| ---------- | -------------------- | -------------- |
-| `amount`   | `number`             | 1234.56        |
-| `for`      | "all" / \[`number`\] | \[1001, 2305\] |
-| `type`     | `number`             | 1              |
-| `optional` | `bool`               | true           |
-
-## Thành công
-
-Máy chủ trả về HTTP 200 OK nếu
-- JSON được gửi hợp lệ và đúng định dạng như đã định nghĩa trên
-- `amount` dương
-- Tất cả mọi phần tử trong `for` đều là id căn hộ hợp lệ nếu `for` thuộc kiểu mảng
-- `type` tồn tại trong danh sách kiểu phí
-- Người dùng đã xác thực với tư cách `Admin`
-
 ## Thất bại
 
-Máy chủ trả về
-- HTTP 400 Bad Request nếu JSON không hợp lệ hoặc không theo đúng định dạng đã định nghĩa trên,
-- HTTP 400 Bad Request nếu `amount` không phải là số dương
-- HTTP 400 Bad Request nếu `type` không tồn tại trong danh sách kiểu phí
-- HTTP 403 Forbidden nếu người dùng đã xác thực nhưng không phải với tư cách `Admin`
+| Lý do thất bại            | Phản hồi |
+| --------------            | -------- |
+| Mức xác thực dưới `Admin` | HTTP 403 |
+| `amount` <= 0             | HTTP 400 |
+| `for` không hợp lệ        | HTTP 400 |
+| `type` không hợp lệ       | HTTP 400 |
+
+## Thân phản hồi
+
+Không sử dụng
