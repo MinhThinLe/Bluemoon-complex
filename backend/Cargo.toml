@@ -26,9 +26,9 @@ rusqlite = {
     default-features = false,
 }
 sha2 = {
-    version = "0.11.1",
+    version = "0.10",
     default-features = false,
 }
 log = "0.4.35"
 http = "1.5.0"
-base64 = "0.23.1"
+base64 = "0.22.1"
