@@ -93,6 +93,23 @@ impl Database {
             .map(|_| ())
             .map_err(|_| ())
     }
+
+    pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, ()> {
+        const QUERY: &str = "select id, name from FeeTypes;";
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY).expect("Invalid SQl");
+        statement
+            .query_map((), |row| {
+                Ok(FeeType {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                })
+            })
+            .map_err(|_| ())?
+            .map(|item| item.map_err(|_| ()))
+            .collect()
+    }
 }
 
 fn create_tables(connection: &Connection) {
