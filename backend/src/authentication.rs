@@ -19,7 +19,7 @@ use crate::server::Server;
 #[derive(Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub enum PrivilegeLevel {
     Resident,
     Accountant,
@@ -40,6 +40,11 @@ pub struct AuthenticatedUsers {
 pub struct NoSessionToken;
 
 impl Reject for NoSessionToken {}
+
+#[derive(Debug)]
+pub struct UnderAuthenticated;
+
+impl Reject for UnderAuthenticated {}
 
 impl AuthenticatedUsers {
     pub fn new() -> Self {
