@@ -173,12 +173,17 @@ Không sử dụng
 
 ## Thân yêu cầu
 
-| Tên trường    | Kiểu dữ liệu | Ghi chú         |
-| ------------- | -----------  | --------------- |
-| `id`          | `integer`    | Phải đã tồn tại |
-| `name`        | `string`     | Tùy chọn        |
-| `paid`        | `bool`       | Tùy chọn        |
-| `is_optional` | `bool`       | Tùy chọn        |
+| Tên trường            | Kiểu dữ liệu | Ghi chú                   |
+| --------------------- | ------------ | ------------------------- |
+| `id`                  | `integer`    | Phải đã tồn tại           |
+| `apartment_id`        | `integer`    | Tùy chọn, phải đã tồn tại |
+| `name`                | `string`     | Tùy chọn                  |
+| `paid`                | `bool`       | Tùy chọn                  |
+| `is_optional`         | `bool`       | Tùy chọn                  |
+
+**Ghi chú**: Nếu sử dụng trường `id` mà không đi kèm với `apartment_id`, tất cả mọi khoản thu với `type_id` == `Fees.type_id` sẽ được cập nhật. Trường hợp có `apartment_id`, mọi bản ghi có `type_id` == `Fees.id` VÀ `apartment_id` == `Fees.apartment_id` sẽ được cập nhật.
+
+Thay đổi này nhằm giúp ban quản lý có thể nhận tiền mặt từ người dân và đánh dấu các khoản phí họ đã nộp.
 
 ## Thất bại
 
