@@ -54,7 +54,7 @@ impl Server {
         method::post()
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee-type"))
-            // .and(warp::body::content_length_limit(1024))
+            .and(warp::body::content_length_limit(1024))
             .and(warp::body::json().map(|json: HashMap<String, String>| FeeType::try_from(json)))
             .and(self.clone().inject())
             .and(self.clone().auth_token())
