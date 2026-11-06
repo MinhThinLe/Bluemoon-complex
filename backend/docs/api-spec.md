@@ -12,6 +12,8 @@ Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 
 `Admin` > `Accountant` > `Resident`
 
+Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví dụ người dùng đã xác thực với mức `Accountant` gọi phương thức cho `Admin`), sẽ nhận lại phản hồi HTTP 403 Forbidden.
+
 **Cheat sheet**
 
 | Base URL                                | Loại yêu cầu | Mô tả                        | Yêu cầu quyền |
@@ -39,15 +41,15 @@ Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 | ------- | ------------------------------------------------------------ |                                                              
 | /       | Hoặc (dùng khi một trường có thể là một trong 2 kiểu dữ liệu)|
 
-# Tạo loại phí
+# Tạo loại khoản thu
 
 ## Yêu cầu
 
-| Trường       | Thông tin                       |
-| ------       | ---------                       |
-| Mức xác thực | `Admin`                         |
-| Phương thức  | `POST`                          |
-| Endpoint     | `/api/new/fee-type`             |
+| Trường       | Thông tin           |
+| ------------ | ------------------- |
+| Mức xác thực | `Admin`             |
+| Phương thức  | `POST`              |
+| Endpoint     | `/api/new/fee-type` |
 
 ## Thân yêu cầu
 
@@ -65,11 +67,10 @@ Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 
 ## Thất bại
 
-| Lý do thất bại            | Phản hồi |
-| --------------            | -------- |
-| Mức xác thực dưới `Admin` | HTTP 403 |
-| JSON không hợp lệ         | HTTP 400 |
-| `fee-type` đã tồn tại     | HTTP 400 |
+| Lý do thất bại        | Phản hồi |
+| --------------------- | -------- |
+| JSON không hợp lệ     | HTTP 400 |
+| `fee-type` đã tồn tại | HTTP 400 |
 
 ## Thân phản hồi
 
@@ -79,11 +80,11 @@ Không sử dụng
 
 ## Yêu cầu
 
-| Trường       | Thông tin                            |
-| ------       | ---------                            |
-| Mức xác thực | `Accountant`                         |
-| Phương thức  | `GET`                                |
-| Endpoint     | `/api/fee-types`                     |
+| Trường       | Thông tin        |
+| ------------ | ---------------- |
+| Mức xác thực | `Accountant`     |
+| Phương thức  | `GET`            |
+| Endpoint     | `/api/fee-types` |
 
 ## Thân yêu cầu
 
@@ -91,39 +92,20 @@ Không sử dụng
 
 ## Thất bại
 
-| Lý do thất bại                     | Phản hồi |
-| --------------                     | -------- |
-| Mức xác thực thấp hơn `Accountant` | HTTP 403 |
+Không thể thất bại
 
 ## Thân phản hồi
 
-| Tên trường  | Kiểu dữ liệu                      |
-| ----------  | ------------                      |
+| Tên trường  | Kiểu dữ liệu                       |
+| ----------- | ---------------------------------- |
 | `fee-types` | `[{ id: integer, name: string }]`  |
-
-**Ví dụ**:
-
-```json
-{
-    "fee-types": [
-        {
-            "id": 1,
-            "name": "Tên khoản phí"
-        },
-        {
-            "id": 2,
-            "name": "Tên khoản phí 2"
-        }
-    ]
-}
-```
 
 # Tạo khoản thu
 
 ## Yêu cầu
 
 | Trường       | Thông tin      |
-| ------       | ---------      |
+| ------------ | -------------- |
 | Mức xác thực | `Admin`        |
 | Phương thức  | `POST`         |
 | Endpoint     | `/api/new/fee` |
@@ -131,28 +113,16 @@ Không sử dụng
 ## Thân yêu cầu
 
 | Tên trường | Kiểu dữ liệu         | Ghi chú                    |
-| ---------- | -------------------- | --------------             |
+| ---------- | -------------------- | -------------------------- |
 | `amount`   | `number`             | > 0                        |
 | `for`      | "all" / \[`number`\] | Phải là id căn hộ hợp lệ   |
 | `type`     | `number`             | Phải là id loại phí hợp lệ |
 | `optional` | `bool`               |                            |
 
-**Ví dụ**:
-
-```json
-{
-    "amount": 1234,
-    "for": "all",
-    "type": 1,
-    "optional": false
-}
-```
-
 ## Thất bại
 
 | Lý do thất bại            | Phản hồi |
-| --------------            | -------- |
-| Mức xác thực dưới `Admin` | HTTP 403 |
+| ------------------------- | -------- |
 | `amount` <= 0             | HTTP 400 |
 | `for` không hợp lệ        | HTTP 400 |
 | `type` không hợp lệ       | HTTP 400 |
@@ -160,3 +130,112 @@ Không sử dụng
 ## Thân phản hồi
 
 Không sử dụng
+
+# Xóa khoản thu
+
+## Yêu cầu
+
+| Trường       | Thông tin                       |
+| ------------ | ------------------------------- |
+| Mức xác thực | `Admin`                         |
+| Phương thức  | `DELETE`                        |
+| Endpoint     | `/api/delete/fee/{fee_type_id}` |
+
+**Ghi chú**: `fee_type_id` là id loại khoản thu hợp lệ.
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại              | Phản hồi |
+| --------------------------- | -------- |
+| `fee_type_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+Không sử dụng
+
+# Sửa khoản thu
+
+## Yêu cầu
+
+| Trường       | Thông tin                     |
+| ------------ | ----------------------------- |
+| Mức xác thực | `Admin`                       |
+| Phương thức  | `POST`                        |
+| Endpoint     | `/api/edit/fee/{fee_type_id}` |
+
+## Thân yêu cầu
+
+| Tên trường | Kiểu dữ liệu | Ghi chú         |
+| ---------- | -----------  | --------------- |
+| `id`       | `integer`    | Phải đã tồn tại |
+| `name`     | `string`     |                 |
+
+## Thất bại
+
+| Lý do thất bại     | Phản hồi |
+| ------------------ | -------- | 
+| `id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+Không sử dụng
+
+# Liệt kê căn hộ
+
+## Yêu cầu
+
+| Trường       | Thông tin                 |
+| ------------ | ------------------------- |
+| Mức xác thực | `Accountant`              |
+| Phương thức  | `GET`                     |
+| Endpoint     | `/api/apartments/{floor}` |
+
+**Ghi chú**: `floor` là số tầng hợp lệ. 1 ≤ `floor` ≤ 30 theo yêu cầu đề bài
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại               | Phản hồi |
+| ---------------------------- | -------- |
+| `floor` quá lớn hoặc quá nhỏ | HTTP 400 |
+
+## Thân phản hồi
+
+| Tên trường   | Kiểu dữ liệu                                         |
+| ----------   | ---------------------------------------------------- |
+| `apartments` | \[{ id: `integer`, area: `float`, type: `string` }\] |
+
+# Liệt kê các khoản phí của căn hộ
+
+## Yêu cầu
+
+| Trường       | Thông tin                            |
+| ------------ | ------------------------------------ |
+| Mức xác thực | `Accountant`                         |
+| Phương thức  | `GET`                                |
+| Endpoint     | `/api/fee/apartment/{apartment_id}`  |
+
+**Ghi chú**: `apartment_id` là id căn hộ hợp lệ
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại               | Phản hồi |
+| ---------------------------- | -------- |
+| `apartment_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+| Tên trường | Kiểu dữ liệu                                                                 |
+| ---------- | ---------------------------------------------------------------------------- |
+| `fees`     | \[{ amount: `float`, paid: `bool`, optional: `bool`, type_name: `string` }\] |
