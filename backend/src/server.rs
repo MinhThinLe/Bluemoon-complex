@@ -4,6 +4,7 @@ use std::future::ready;
 
 use http::StatusCode;
 
+use serde_json::Value;
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
@@ -16,7 +17,7 @@ use crate::authentication::{
 };
 use crate::config::ServerConfig;
 use crate::database::Database;
-use crate::handles::FeeType;
+use crate::handles::{Fee, FeeType};
 
 const API_ROOT_URL: &str = "api";
 
@@ -46,6 +47,7 @@ impl Server {
         self.clone()
             .new_fee_type()
             .or(self.clone().get_fee_types())
+            .or(self.clone().new_fee())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
@@ -70,6 +72,17 @@ impl Server {
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(Self::get_fee_types_handle)
+    }
+
+    fn new_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::post()
+            .and(path(API_ROOT_URL))
+            .and(path!("new" / "fee"))
+            .and(warp::body::content_length_limit(1024))
+            .and(warp::body::json().map(|json: Value| Fee::try_from(json)))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|fee, server: Server, token| server.new_fee_handle(token, fee))
     }
 
     fn process_authentication(

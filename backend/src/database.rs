@@ -3,10 +3,11 @@ use std::sync::Arc;
 
 use rusqlite::{Connection, params};
 use tokio::sync::Mutex;
+use warp::reject::Reject;
 
 use crate::authentication::PrivilegeLevel;
 use crate::config::DatabaseConfig;
-use crate::handles::FeeType;
+use crate::handles::{ApartmentId, Fee, FeeType};
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
@@ -14,6 +15,11 @@ use crate::handles::FeeType;
 pub struct Database {
     connection: Arc<Mutex<Connection>>,
 }
+
+#[derive(Debug)]
+pub struct DatabaseError;
+
+impl Reject for DatabaseError {}
 
 pub struct User {
     pub username: String,
@@ -84,17 +90,17 @@ impl Database {
             .ok()
     }
 
-    pub async fn add_fee_type(&self, fee_type: FeeType) -> Result<(), ()> {
+    pub async fn add_fee_type(&self, fee_type: FeeType) -> Result<(), DatabaseError> {
         const QUERY: &str = "insert into FeeTypes (name) values (?)";
 
         let database = self.connection.lock().await;
         database
             .execute(QUERY, params![fee_type.name])
             .map(|_| ())
-            .map_err(|_| ())
+            .map_err(|_| DatabaseError)
     }
 
-    pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, ()> {
+    pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, DatabaseError> {
         const QUERY: &str = "select id, name from FeeTypes;";
 
         let database = self.connection.lock().await;
@@ -106,9 +112,52 @@ impl Database {
                     name: row.get(1)?,
                 })
             })
-            .map_err(|_| ())?
-            .map(|item| item.map_err(|_| ()))
+            .map_err(|_| DatabaseError)?
+            .map(|item| item.map_err(|_| DatabaseError))
             .collect()
+    }
+
+    pub async fn get_all_apartment_id(&self) -> Result<Vec<ApartmentId>, DatabaseError> {
+        const QUERY: &str = "select id from Apartments;";
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
+        statement
+            .query_map((), |row| row.get(0))
+            .map_err(|_| DatabaseError)?
+            .map(|item| item.map_err(|_| DatabaseError))
+            .collect()
+    }
+
+    pub async fn add_fee(
+        &self,
+        fee: Fee,
+        for_apartments: &[ApartmentId],
+    ) -> Result<(), DatabaseError> {
+        const QUERY: &str = "insert into Fees (amount, paid, optional, apartment_id, type_id) values (?, ?, ?, ?, ?);";
+
+        let mut database = self.connection.lock().await;
+        let transaction = database.transaction().map_err(|_| DatabaseError)?;
+        let mut statement = transaction.prepare(QUERY).expect("Invalid SQL");
+
+        (!for_apartments.iter().any(|apartment_id| {
+            statement
+                .execute(params![
+                    fee.amount,
+                    false,
+                    fee.optional,
+                    apartment_id,
+                    fee.type_id
+                ])
+                .is_err()
+        }))
+        .ok_or(DatabaseError)?;
+
+        drop(statement);
+
+        transaction.commit().expect("Unable to commit");
+
+        Ok(())
     }
 }
 
