@@ -17,7 +17,7 @@ use crate::authentication::{
 };
 use crate::config::ServerConfig;
 use crate::database::{Database, DatabaseError};
-use crate::handles::{Fee, FeeType, FeeTypeId};
+use crate::handles::{FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId};
 
 const API_ROOT_URL: &str = "api";
 
@@ -49,6 +49,7 @@ impl Server {
             .or(self.clone().get_fee_types())
             .or(self.clone().new_fee())
             .or(self.clone().delete_fee())
+            .or(self.clone().edit_fee())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
     }
@@ -94,10 +95,24 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: Value| Fee::try_from(json)))
+            .and(warp::body::json().map(|json: Value| FeeAdditionRequest::try_from(json)))
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee, server: Server, token| server.new_fee_handle(token, fee))
+            .recover(handle_rejection)
+    }
+
+    fn edit_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::post()
+            .and(path(API_ROOT_URL))
+            .and(path!("edit" / "fee"))
+            .and(warp::body::content_length_limit(1024))
+            .and(warp::body::json().map(|json: Value| FeeModificationRequest::try_from(&json)))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|request, server: Server, privilege_level| {
+                server.edit_fee_handle(privilege_level, request)
+            })
             .recover(handle_rejection)
     }
 
