@@ -9,7 +9,7 @@ use warp::reject::Reject;
 
 use crate::authentication::PrivilegeLevel;
 use crate::config::DatabaseConfig;
-use crate::handles::{ApartmentId, Fee, FeeType, FeeTypeId};
+use crate::handles::{ApartmentId, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId};
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
@@ -136,7 +136,7 @@ impl Database {
 
     pub async fn add_fee(
         &self,
-        fee: Fee,
+        fee: FeeAdditionRequest,
         for_apartments: &[ApartmentId],
     ) -> Result<(), DatabaseError> {
         const QUERY: &str = "insert into Fees
@@ -175,6 +175,42 @@ impl Database {
 
         let database = self.connection.lock().await;
         Ok(database.execute(QUERY, params![fee_type]).map(|_| ())?)
+    }
+
+    pub async fn modify_fee(&self, request: FeeModificationRequest) -> Result<(), DatabaseError> {
+        const MODIFY_AMOUNT: &str =
+            "update Fees set amount = ? where type_id = ? and apartment_id = ?";
+        const MODIFY_STATUS: &str =
+            "update Fees set paid = ? where type_id = ? and apartment_id = ?";
+        const MODIFY_OPTIONAL: &str =
+            "update Fees set optional = ? where type_id = ? and apartment_id = ?";
+
+        let mut database = self.connection.lock().await;
+        let transaction = database
+            .transaction()
+            .expect("Unable to start a transaction");
+        if let Some(new_amount) = request.amount {
+            transaction.execute(
+                MODIFY_AMOUNT,
+                params![new_amount, request.type_id, request.apartment_id],
+            )?;
+        }
+        if let Some(new_status) = request.paid {
+            transaction.execute(
+                MODIFY_STATUS,
+                params![new_status, request.type_id, request.apartment_id],
+            )?;
+        }
+        if let Some(new_optional) = request.optional {
+            transaction.execute(
+                MODIFY_OPTIONAL,
+                params![new_optional, request.type_id, request.apartment_id],
+            )?;
+        }
+
+        transaction.commit()?;
+
+        Ok(())
     }
 }
 

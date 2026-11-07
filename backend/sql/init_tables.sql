@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS ApartmentTypes (
 
 CREATE TABLE IF NOT EXISTS Fees (
     id INTEGER PRIMARY KEY,
-    amount REAL NOT NULL CHECK (amount > 0),
+    amount INTEGER NOT NULL CHECK (amount > 0),
     paid BOOLEAN NOT NULL,
     optional BOOLEAN NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (datetime('now')),

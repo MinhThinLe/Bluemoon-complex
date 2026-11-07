@@ -16,15 +16,15 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 
 **Cheat sheet**
 
-| Đã cài đặt | Base URL                                                                  | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
-| ---------- | ------------------------------------------------------------------------- | ------------ | -------------------------------- | ------------- |
-| ✅        | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                | POST         | Tạo loại khoản thu mới           | `Admin`       |
-| ✅        | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                   | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
-| ✅        | [`/api/new/fee`](#Tạo-khoản-thu)                                          | POST         | Tạo khoản thu mới                | `Admin`       |
-| ✅        | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                         | DELETE       | Xóa một khoản thu                | `Admin`       |
-| ❌        | [`/api/edit/fee/{fee_type_id}`](#Sửa-khoản-thu)                           | POST         | Sửa một khoản thu                | `Admin`       |
-| ❌        | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                              | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
-| ❌        | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)  | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
+| Đã cài đặt | Base URL                                                                 | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
+| ---------- | ------------------------------------------------------------------------ | ------------ | -------------------------------- | ------------- |
+| ✅         | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                               | POST         | Tạo loại khoản thu mới           | `Admin`       |
+| ✅         | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                  | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
+| ✅         | [`/api/new/fee`](#Tạo-khoản-thu)                                         | POST         | Tạo khoản thu mới                | `Admin`       |
+| ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                        | DELETE       | Xóa một khoản thu                | `Admin`       |
+| ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                       | POST         | Sửa một khoản thu                | `Admin`       |
+| ❌         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                             | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
+| ❌         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ) | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
 
 # Ký pháp
 
@@ -167,25 +167,25 @@ Không sử dụng
 
 ## Yêu cầu
 
-| Trường       | Thông tin                     |
-| ------------ | ----------------------------- |
-| Mức xác thực | `Admin`                       |
-| Phương thức  | `POST`                        |
-| Endpoint     | `/api/edit/fee/{fee_type_id}` |
+| Trường       | Thông tin        |
+| ------------ | ---------------- |
+| Mức xác thực | `Admin`          |
+| Phương thức  | `POST`           |
+| Endpoint     | `/api/edit/fee/` |
 
 ## Thân yêu cầu
 
-| Tên trường            | Kiểu dữ liệu | Ghi chú                   |
-| --------------------- | ------------ | ------------------------- |
-| `id`                  | `integer`    | Phải đã tồn tại           |
-| `apartment_id`        | `integer`    | Tùy chọn, phải đã tồn tại |
-| `name`                | `string`     | Tùy chọn                  |
-| `paid`                | `bool`       | Tùy chọn                  |
-| `is_optional`         | `bool`       | Tùy chọn                  |
+| Tên trường     | Kiểu dữ liệu | Ghi chú         |
+| -------------- | ------------ | --------------- |
+| `id`           | `integer`    | Phải đã tồn tại |
+| `apartment_id` | `integer`    | Phải đã tồn tại |
+| `paid`         | `bool`       | Tùy chọn        |
+| `optional`     | `bool`       | Tùy chọn        |
+| `amount`       | `integer`    | Tùy chọn        |
 
-**Ghi chú**: Nếu sử dụng trường `id` mà không đi kèm với `apartment_id`, tất cả mọi khoản thu với `type_id` == `Fees.type_id` sẽ được cập nhật. Trường hợp có `apartment_id`, mọi bản ghi có `type_id` == `Fees.id` VÀ `apartment_id` == `Fees.apartment_id` sẽ được cập nhật.
+**Ghi chú**: Yêu cầu sửa khoản phí phải đi kèm với `apartment_id` nhằm giới hạn số lượng bản ghi sẽ thay đổi thành (xấp xỉ) 1. Bản thân việc thay đổi khoản thu nên hiếm khi xảy ra (~5 lần/hộ/tháng) và rủi ro nếu xảy ra nhầm lẫn (con người hoặc mã nguồn) là khá lớn. 
 
-Thay đổi này nhằm giúp ban quản lý có thể nhận tiền mặt từ người dân và đánh dấu các khoản phí họ đã nộp.
+Việc sửa tên khoản thu là bất khả thi do tên của khoản thu không được lưu trong bản ghi khoản thu. Giả sử như việc sửa tên khoản thu có khả thi, việc chỉ cần sửa tên khoản thu của một số hộ không nên xảy ra.
 
 ## Thất bại
 
