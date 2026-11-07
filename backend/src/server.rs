@@ -143,6 +143,19 @@ impl Server {
 
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     use log::{error, warn};
+    use warp::body::BodyDeserializeError;
+    use warp::reject::MethodNotAllowed;
+
+    if err.is_not_found() {
+        return Err(err);
+    }
+    if let Some(_) = err.find::<MethodNotAllowed>() {
+        return Err(err);
+    }
+
+    if let Some(_) = err.find::<BodyDeserializeError>() {
+        return Ok(with_status(html("Invalid JSON"), StatusCode::BAD_REQUEST));
+    }
 
     if let Some(DatabaseError(db_err)) = err.find() {
         error!("Database error: {db_err}");

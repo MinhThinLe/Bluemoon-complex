@@ -7,7 +7,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 use warp::reject::{Reject, Rejection};
-use warp::reply::{Reply, html, json, with_status};
+use warp::reply::{Html, Reply, html, json, with_status};
 
 use crate::Server;
 use crate::authentication::{PrivilegeLevel, UnderAuthenticated};
@@ -149,7 +149,16 @@ impl Server {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
         }
-        let fee = fee?;
+
+        let fee = match fee {
+            Ok(fee) => fee,
+            Err(error) => {
+                return Ok(with_status(
+                    error.rejection_message(),
+                    StatusCode::BAD_REQUEST,
+                ));
+            }
+        };
 
         let (apartment_ids, all_ids_valid) = {
             let mut apartment_ids = self.database.get_all_apartment_id().await?;
@@ -170,7 +179,7 @@ impl Server {
 
         if !all_ids_valid {
             return Ok(with_status(
-                html("Invalid Id list supplied"),
+                html("Invalid Id list supplied".to_string()),
                 StatusCode::BAD_REQUEST,
             ));
         }
@@ -184,7 +193,7 @@ impl Server {
 
         self.database.add_fee(fee, &apartment_ids).await?;
 
-        Ok(with_status(html("Success"), StatusCode::OK))
+        Ok(with_status(html("Success".to_string()), StatusCode::OK))
     }
 
     pub async fn delete_fee_handle(
@@ -214,6 +223,20 @@ impl Server {
             .delete_fees(fee_type_id)
             .await
             .map(|()| with_status(html("Delete OK"), StatusCode::OK))?)
+    }
+}
+
+impl FeeError {
+    fn rejection_message(self) -> Html<String> {
+        let message = match self {
+            Self::Amount => "amount",
+            Self::Designator => "designator",
+            Self::Type => "type",
+            Self::Optional => "optional",
+            Self::DueDate => "due date",
+        };
+
+        html(format!("Invalid {message}"))
     }
 }
 
