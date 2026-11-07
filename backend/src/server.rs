@@ -96,12 +96,11 @@ impl Server {
     fn request_authentication(
         self,
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-        path!("hello")
-            .and(self.inject())
+        self.inject()
             .and_then(Self::request_authentication_handle)
     }
 
-    async fn request_authentication_handle(self) -> Result<impl Reply, Infallible> {
+    async fn request_authentication_handle(self) -> Result<impl Reply, Rejection> {
         let reply_content = html("SIGN IN");
         let reply = with_status(reply_content, StatusCode::UNAUTHORIZED);
         let reply = with_header(reply, "WWW-Authenticate", "Basic, charset=\"UTF-8\"");

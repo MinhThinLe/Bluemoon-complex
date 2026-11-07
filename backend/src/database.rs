@@ -134,7 +134,9 @@ impl Database {
         fee: Fee,
         for_apartments: &[ApartmentId],
     ) -> Result<(), DatabaseError> {
-        const QUERY: &str = "insert into Fees (amount, paid, optional, apartment_id, type_id) values (?, ?, ?, ?, ?);";
+        const QUERY: &str = "insert into Fees
+            (amount, paid, optional, due_on, type_id, apartment_id) values
+            (?     , ?   , ?       , ?     , ?      , ?           );";
 
         let mut database = self.connection.lock().await;
         let transaction = database.transaction().map_err(|_| DatabaseError)?;
@@ -146,8 +148,9 @@ impl Database {
                     fee.amount,
                     false,
                     fee.optional,
+                    fee.due_on,
+                    fee.type_id,
                     apartment_id,
-                    fee.type_id
                 ])
                 .is_err()
         }))
