@@ -106,10 +106,9 @@ impl Database {
         const QUERY: &str = "insert into FeeTypes (name) values (?)";
 
         let database = self.connection.lock().await;
-        database
+        Ok(database
             .execute(QUERY, params![fee_type.name])
-            .map(|_| ())
-            .map_err(DatabaseError)
+            .map(|_| ())?)
     }
 
     pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, DatabaseError> {
@@ -123,8 +122,7 @@ impl Database {
                     id: row.get(0)?,
                     name: row.get(1)?,
                 })
-            })
-            .map_err(DatabaseError)?
+            })?
             .map(|item| item.map_err(DatabaseError))
             .collect()
     }
@@ -135,8 +133,7 @@ impl Database {
         let database = self.connection.lock().await;
         let mut statement = database.prepare(QUERY).expect("Invalid SQL");
         statement
-            .query_map((), |row| row.get(0))
-            .map_err(DatabaseError)?
+            .query_map((), |row| row.get(0))?
             .map(|item| item.map_err(DatabaseError))
             .collect()
     }
@@ -181,10 +178,7 @@ impl Database {
         const QUERY: &str = "delete from Fees where type_id = (?);";
 
         let database = self.connection.lock().await;
-        database
-            .execute(QUERY, params![fee_type])
-            .map(|_| ())
-            .map_err(DatabaseError)
+        Ok(database.execute(QUERY, params![fee_type]).map(|_| ())?)
     }
 }
 

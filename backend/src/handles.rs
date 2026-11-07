@@ -215,7 +215,7 @@ impl Server {
             .database
             .delete_fees(fee_type_id)
             .await
-            .map(|_| with_status(html("Delete OK"), StatusCode::OK))?)
+            .map(|()| with_status(html("Delete OK"), StatusCode::OK))?)
     }
 }
 
