@@ -16,15 +16,15 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 
 **Cheat sheet**
 
-| Base URL                                                                  | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
-| ------------------------------------------------------------------------- | ------------ | -------------------------------- | ------------- |
-| [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                | POST         | Tạo loại khoản thu mới           | `Admin`       |
-| [`/api/fee-types`](#Lấy-loại-khoản-thu)                                   | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
-| [`/api/new/fee`](#Tạo-khoản-thu)                                          | POST         | Tạo khoản thu mới                | `Admin`       |
-| [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                         | DELETE       | Xóa một khoản thu                | `Admin`       |
-| [`/api/edit/fee/{fee_type_id}`](#Sửa-khoản-thu)                           | POST         | Sửa một khoản thu                | `Admin`       |
-| [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                              | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
-| [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)  | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
+| Đã cài đặt | Base URL                                                                  | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
+| ---------- | ------------------------------------------------------------------------- | ------------ | -------------------------------- | ------------- |
+| ✅        | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                | POST         | Tạo loại khoản thu mới           | `Admin`       |
+| ✅        | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                   | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
+| ✅        | [`/api/new/fee`](#Tạo-khoản-thu)                                          | POST         | Tạo khoản thu mới                | `Admin`       |
+| ✅        | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                         | DELETE       | Xóa một khoản thu                | `Admin`       |
+| ❌        | [`/api/edit/fee/{fee_type_id}`](#Sửa-khoản-thu)                           | POST         | Sửa một khoản thu                | `Admin`       |
+| ❌        | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                              | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
+| ❌        | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)  | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
 
 # Ký pháp
 
