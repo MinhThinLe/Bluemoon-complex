@@ -125,7 +125,7 @@ impl Server {
             .database
             .add_fee_type(fee_type)
             .await
-            .map(|_| with_status(html("ADD FEE TYPE OK"), StatusCode::OK))?)
+            .map(|()| with_status(html("ADD FEE TYPE OK"), StatusCode::OK))?)
     }
 
     pub async fn get_fee_types_handle(
