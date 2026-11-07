@@ -18,7 +18,7 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 
 | Base URL                                                                  | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
 | ------------------------------------------------------------------------- | ------------ | -------------------------------- | ------------- |
-| [`/api/new/fee-type`](#Tạo-khoản-thu)                                     | POST         | Tạo loại khoản thu mới           | `Admin`       |
+| [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                | POST         | Tạo loại khoản thu mới           | `Admin`       |
 | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                   | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
 | [`/api/new/fee`](#Tạo-khoản-thu)                                          | POST         | Tạo khoản thu mới                | `Admin`       |
 | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                         | DELETE       | Xóa một khoản thu                | `Admin`       |
@@ -36,6 +36,7 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 | `double`           | Số thực double IEEE 754-1985       |
 | `integer`          | Số nguyên số bù 2                  |
 | `bool`             | Giá trị trong đại số Bool          |
+| `datetime`         | Giờ UNIX                           |
 | \[`kiểu dữ liệu`\] | Mảng một chiều chứa `kiểu dữ liệu` |
 | `{ key: type }`    | Từ điển với khóa và kiểu của khóa  |
 
@@ -122,6 +123,7 @@ Không thể thất bại
 | `for`      | "all" / \[`number`\] | Phải là id căn hộ hợp lệ   |
 | `type`     | `number`             | Phải là id loại phí hợp lệ |
 | `optional` | `bool`               |                            |
+| `due-on`   | `datetime`           |                            |
 
 ## Thất bại
 
