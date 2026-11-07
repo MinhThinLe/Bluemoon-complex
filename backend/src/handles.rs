@@ -14,6 +14,7 @@ use crate::authentication::{PrivilegeLevel, UnderAuthenticated};
 use crate::database::DatabaseError;
 
 pub type ApartmentId = u32;
+pub type UnixTime = i64;
 type FeeTypeId = u32;
 
 #[derive(Serialize)]
@@ -32,6 +33,7 @@ pub struct Fee {
     pub type_id: FeeTypeId,
     pub for_apartments: Apartments,
     pub optional: bool,
+    pub due_on: UnixTime,
 }
 
 #[derive(Debug)]
@@ -45,6 +47,7 @@ pub enum FeeError {
     Designator,
     Type,
     Optional,
+    DueDate,
 }
 
 impl Reject for FeeError {}
@@ -88,6 +91,8 @@ impl TryFrom<Value> for Fee {
         let type_id = get_int(&value, "type").ok_or(FeeError::Type)?;
         let optional = get_bool(&value, "optional").ok_or(FeeError::Optional)?;
 
+        let due_on = get_int(&value, "due-on").ok_or(FeeError::DueDate)?;
+
         let for_apartments = value
             .get("for")
             .ok_or(FeeError::Designator)?
@@ -99,6 +104,7 @@ impl TryFrom<Value> for Fee {
             type_id,
             for_apartments,
             optional,
+            due_on,
         })
     }
 }
@@ -173,6 +179,14 @@ impl Server {
                 StatusCode::BAD_REQUEST,
             ));
         }
+
+        self
+            .database
+            .get_all_fee_types()
+            .await?
+            .iter()
+            .any(|fee_type| fee_type.id == fee.type_id)
+        .ok_or(FeeError::Type)?;
 
         self.database.add_fee(fee, &apartment_ids).await?;
 
