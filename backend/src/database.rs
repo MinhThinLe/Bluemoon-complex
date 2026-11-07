@@ -1,13 +1,15 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, Error, params};
+
 use tokio::sync::Mutex;
+
 use warp::reject::Reject;
 
 use crate::authentication::PrivilegeLevel;
 use crate::config::DatabaseConfig;
-use crate::handles::{ApartmentId, Fee, FeeType};
+use crate::handles::{ApartmentId, Fee, FeeType, FeeTypeId};
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
@@ -17,9 +19,19 @@ pub struct Database {
 }
 
 #[derive(Debug)]
-pub struct DatabaseError;
+#[allow(
+    dead_code,
+    reason = "So that warp can warn against database errors in the console"
+)]
+pub struct DatabaseError(Error);
 
 impl Reject for DatabaseError {}
+
+impl From<Error> for DatabaseError {
+    fn from(value: Error) -> Self {
+        Self(value)
+    }
+}
 
 pub struct User {
     pub username: String,
@@ -97,7 +109,7 @@ impl Database {
         database
             .execute(QUERY, params![fee_type.name])
             .map(|_| ())
-            .map_err(|_| DatabaseError)
+            .map_err(DatabaseError)
     }
 
     pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, DatabaseError> {
@@ -112,8 +124,8 @@ impl Database {
                     name: row.get(1)?,
                 })
             })
-            .map_err(|_| DatabaseError)?
-            .map(|item| item.map_err(|_| DatabaseError))
+            .map_err(DatabaseError)?
+            .map(|item| item.map_err(DatabaseError))
             .collect()
     }
 
@@ -124,8 +136,8 @@ impl Database {
         let mut statement = database.prepare(QUERY).expect("Invalid SQL");
         statement
             .query_map((), |row| row.get(0))
-            .map_err(|_| DatabaseError)?
-            .map(|item| item.map_err(|_| DatabaseError))
+            .map_err(DatabaseError)?
+            .map(|item| item.map_err(DatabaseError))
             .collect()
     }
 
@@ -139,28 +151,40 @@ impl Database {
             (?     , ?   , ?       , ?     , ?      , ?           );";
 
         let mut database = self.connection.lock().await;
-        let transaction = database.transaction().map_err(|_| DatabaseError)?;
+        let transaction = database.transaction().map_err(DatabaseError)?;
         let mut statement = transaction.prepare(QUERY).expect("Invalid SQL");
 
-        (!for_apartments.iter().any(|apartment_id| {
-            statement
-                .execute(params![
-                    fee.amount,
-                    false,
-                    fee.optional,
-                    fee.due_on,
-                    fee.type_id,
-                    apartment_id,
-                ])
-                .is_err()
-        }))
-        .ok_or(DatabaseError)?;
+        for_apartments
+            .iter()
+            .map(|apartment_id| {
+                statement
+                    .execute(params![
+                        fee.amount,
+                        false,
+                        fee.optional,
+                        fee.due_on,
+                        fee.type_id,
+                        apartment_id,
+                    ])
+                    .map_err(DatabaseError)
+            })
+            .collect::<Result<Vec<usize>, DatabaseError>>()?;
 
         drop(statement);
 
         transaction.commit().expect("Unable to commit");
 
         Ok(())
+    }
+
+    pub async fn delete_fees(&self, fee_type: FeeTypeId) -> Result<(), DatabaseError> {
+        const QUERY: &str = "delete from Fees where type_id = (?);";
+
+        let database = self.connection.lock().await;
+        database
+            .execute(QUERY, params![fee_type])
+            .map(|_| ())
+            .map_err(DatabaseError)
     }
 }
 

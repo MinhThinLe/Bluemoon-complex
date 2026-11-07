@@ -11,11 +11,10 @@ use warp::reply::{Reply, html, json, with_status};
 
 use crate::Server;
 use crate::authentication::{PrivilegeLevel, UnderAuthenticated};
-use crate::database::DatabaseError;
 
 pub type ApartmentId = u32;
 pub type UnixTime = i64;
-type FeeTypeId = u32;
+pub type FeeTypeId = u32;
 
 #[derive(Serialize)]
 pub struct FeeType {
@@ -139,9 +138,7 @@ impl Server {
             Err(UnderAuthenticated)?;
         }
 
-        let Ok(fee_types) = self.database.get_all_fee_types().await else {
-            return Err(DatabaseError)?;
-        };
+        let fee_types = self.database.get_all_fee_types().await?;
 
         Ok(with_status(json(&fee_types), StatusCode::OK))
     }
@@ -180,17 +177,45 @@ impl Server {
             ));
         }
 
-        self
-            .database
+        self.database
             .get_all_fee_types()
             .await?
             .iter()
             .any(|fee_type| fee_type.id == fee.type_id)
-        .ok_or(FeeError::Type)?;
+            .ok_or(FeeError::Type)?;
 
         self.database.add_fee(fee, &apartment_ids).await?;
 
         Ok(with_status(html("Success"), StatusCode::OK))
+    }
+
+    pub async fn delete_fee_handle(
+        self,
+        privilege: PrivilegeLevel,
+        fee_type_id: FeeTypeId,
+    ) -> Result<impl Reply, Rejection> {
+        if privilege < PrivilegeLevel::Admin {
+            Err(UnderAuthenticated)?;
+        }
+
+        if !self
+            .database
+            .get_all_fee_types()
+            .await?
+            .iter()
+            .any(|fee_type| fee_type.id == fee_type_id)
+        {
+            return Ok(with_status(
+                html("Fee type id doesn't exist"),
+                StatusCode::NOT_FOUND,
+            ));
+        }
+
+        Ok(self
+            .database
+            .delete_fees(fee_type_id)
+            .await
+            .map(|_| with_status(html("Delete OK"), StatusCode::OK))?)
     }
 }
 

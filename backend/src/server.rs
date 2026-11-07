@@ -17,7 +17,7 @@ use crate::authentication::{
 };
 use crate::config::ServerConfig;
 use crate::database::Database;
-use crate::handles::{Fee, FeeType};
+use crate::handles::{Fee, FeeType, FeeTypeId};
 
 const API_ROOT_URL: &str = "api";
 
@@ -48,8 +48,20 @@ impl Server {
             .new_fee_type()
             .or(self.clone().get_fee_types())
             .or(self.clone().new_fee())
+            .or(self.clone().delete_fee())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
+    }
+
+    fn delete_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::delete()
+            .and(path(API_ROOT_URL))
+            .and(path!("delete" / "fee" / FeeTypeId))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|fee_type_id, server: Server, privilege_level| {
+                server.delete_fee_handle(privilege_level, fee_type_id)
+            })
     }
 
     fn new_fee_type(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -96,8 +108,7 @@ impl Server {
     fn request_authentication(
         self,
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-        self.inject()
-            .and_then(Self::request_authentication_handle)
+        self.inject().and_then(Self::request_authentication_handle)
     }
 
     async fn request_authentication_handle(self) -> Result<impl Reply, Rejection> {
