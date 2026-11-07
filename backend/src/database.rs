@@ -19,11 +19,7 @@ pub struct Database {
 }
 
 #[derive(Debug)]
-#[allow(
-    dead_code,
-    reason = "So that warp can warn against database errors in the console"
-)]
-pub struct DatabaseError(Error);
+pub struct DatabaseError(pub Error);
 
 impl Reject for DatabaseError {}
 

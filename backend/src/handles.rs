@@ -121,13 +121,11 @@ impl Server {
             return Ok(with_status(html("INVALID JSON"), StatusCode::BAD_REQUEST));
         };
 
-        match self.database.add_fee_type(fee_type).await {
-            Ok(()) => Ok(with_status(html("ADD FEE TYPE OK"), StatusCode::OK)),
-            Err(_) => Ok(with_status(
-                html("DUPLICATE FEE TYPE"),
-                StatusCode::BAD_REQUEST,
-            )),
-        }
+        Ok(self
+            .database
+            .add_fee_type(fee_type)
+            .await
+            .map(|_| with_status(html("ADD FEE TYPE OK"), StatusCode::OK))?)
     }
 
     pub async fn get_fee_types_handle(

@@ -13,10 +13,10 @@ use warp::reply::{Reply, html, with_header, with_status};
 use warp::{Filter, path};
 
 use crate::authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel,
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
 };
 use crate::config::ServerConfig;
-use crate::database::Database;
+use crate::database::{Database, DatabaseError};
 use crate::handles::{Fee, FeeType, FeeTypeId};
 
 const API_ROOT_URL: &str = "api";
@@ -62,6 +62,7 @@ impl Server {
             .and_then(|fee_type_id, server: Server, privilege_level| {
                 server.delete_fee_handle(privilege_level, fee_type_id)
             })
+            .recover(handle_rejection)
     }
 
     fn new_fee_type(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -75,6 +76,7 @@ impl Server {
             .and_then(|fee_type, server: Server, privilege_level| {
                 server.new_fee_type_handle(privilege_level, fee_type)
             })
+            .recover(handle_rejection)
     }
 
     fn get_fee_types(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -84,6 +86,7 @@ impl Server {
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(Self::get_fee_types_handle)
+            .recover(handle_rejection)
     }
 
     fn new_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -95,6 +98,7 @@ impl Server {
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee, server: Server, token| server.new_fee_handle(token, fee))
+            .recover(handle_rejection)
     }
 
     fn process_authentication(
@@ -135,4 +139,25 @@ impl Server {
             .await
             .ok_or_else(|| Rejection::from(NoSessionToken))
     }
+}
+
+async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
+    use log::{error, warn};
+
+    if let Some(DatabaseError(db_err)) = err.find() {
+        error!("Database error: {db_err}");
+        return Ok(with_status(
+            html("Database error"),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ));
+    }
+    if let Some(UnderAuthenticated) = err.find() {
+        return Ok(with_status(
+            html("Under-authenticated"),
+            StatusCode::FORBIDDEN,
+        ));
+    }
+
+    warn!("Unhandled rejection: {err:?}");
+    Err(err)
 }
