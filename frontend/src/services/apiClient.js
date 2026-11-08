@@ -22,7 +22,6 @@ export async function apiRequest(path, options = {}) {
     body,
   })
   const payload = await readResponse(response)
-
   if (!response.ok) {
     const message = typeof payload === 'string' ? payload : payload?.error?.message ?? payload?.message ?? `Yêu cầu thất bại (${response.status})`
     const error = new Error(message)
