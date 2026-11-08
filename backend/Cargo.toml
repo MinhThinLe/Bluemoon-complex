@@ -1,7 +1,8 @@
 [workspace]
 resolver = "3"
-members = ["bluemoon_authentication",
-    "bluemoon_database"
+members = [
+    "bluemoon_authentication",
+    "bluemoon_database",
 ]
 
 [package]
