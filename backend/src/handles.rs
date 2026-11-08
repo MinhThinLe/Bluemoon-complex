@@ -171,7 +171,7 @@ impl Server {
             Err(UnderAuthenticated)?;
         }
 
-        if floor < 0 || floor > FLOOR_LIMIT {
+        if !(0..=FLOOR_LIMIT).contains(&floor) {
             return Ok(with_status(
                 json(&json!({ "error": "Invalid floor" })),
                 StatusCode::BAD_REQUEST,
