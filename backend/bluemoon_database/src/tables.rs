@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use serde_json::Value;
 
@@ -8,8 +8,9 @@ pub type FeeTypeId = i32;
 pub type ApartmentId = i32;
 pub type UnixTime = i64;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FeeType {
+    #[serde(skip_deserializing)]
     pub id: FeeTypeId,
     pub(crate) name: String,
 }
@@ -43,19 +44,14 @@ pub enum FeeAdditionError {
     DueDate,
 }
 
+#[derive(Deserialize, Debug)]
 pub struct FeeModificationRequest {
+    #[serde(rename = "id")]
     pub type_id: FeeTypeId,
     pub apartment_id: ApartmentId,
     pub paid: Option<bool>,
     pub optional: Option<bool>,
     pub amount: Option<i64>,
-}
-
-#[derive(Debug)]
-pub enum FeeModificationError {
-    TypeId,
-    ApartmentId,
-    Amount,
 }
 
 pub enum Apartments {
@@ -82,52 +78,6 @@ pub struct Fee {
     pub type_name: String,
     pub created_at: UnixTime,
     pub due_on: UnixTime,
-}
-
-impl TryFrom<&Value> for FeeModificationRequest {
-    type Error = FeeModificationError;
-    fn try_from(value: &Value) -> Result<Self, Self::Error> {
-        let type_id = get_int(value, "id").ok_or(FeeModificationError::TypeId)?;
-        let apartment_id =
-            get_int(value, "apartment_id").ok_or(FeeModificationError::ApartmentId)?;
-
-        let paid = get_bool(value, "paid");
-        let optional = get_bool(value, "optional");
-        let amount = get_int(value, "amount");
-
-        // Using a u64 from the get go would have made this check redundant but relational databases
-        // (or at the very least, Sqlite and Postgres) in general doesn't offer unsigned integers as
-        // a data structure for some reason. This check looks rather silly, deal with it.
-        if let Some(amount) = amount
-            && amount < 0
-        {
-            Err(FeeModificationError::Amount)?;
-        }
-
-        Ok(Self {
-            type_id,
-            apartment_id,
-            paid,
-            optional,
-            amount,
-        })
-    }
-}
-
-impl TryFrom<&Value> for FeeType {
-    type Error = FeeTypeError;
-    fn try_from(value: &Value) -> Result<Self, Self::Error> {
-        let name = value
-            .get("name")
-            .ok_or(FeeTypeError::NoNameKey)?
-            .as_str()
-            .ok_or(FeeTypeError::NoNameKey)?;
-
-        Ok(Self {
-            id: 0,
-            name: name.to_string(),
-        })
-    }
 }
 
 impl TryFrom<&Value> for Apartments {
@@ -193,18 +143,6 @@ impl FeeAdditionError {
             Self::Type => "type",
             Self::Optional => "optional",
             Self::DueDate => "due date",
-        };
-
-        format!("Invalid {message}")
-    }
-}
-
-impl FeeModificationError {
-    pub fn rejection_message(self) -> String {
-        let message = match self {
-            Self::TypeId => "type id",
-            Self::ApartmentId => "apartment id",
-            Self::Amount => "amount",
         };
 
         format!("Invalid {message}")
