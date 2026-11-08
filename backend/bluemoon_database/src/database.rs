@@ -7,8 +7,8 @@ use tokio::sync::Mutex;
 use warp::reject::Reject;
 
 use crate::tables::{
-    Apartment, ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType,
-    FeeTypeId, User,
+    Apartment, ApartmentId, DatabaseConfig, Fee, FeeAdditionRequest, FeeModificationRequest,
+    FeeType, FeeTypeId, User,
 };
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
@@ -228,6 +228,40 @@ impl Database {
                     id: row.get(0)?,
                     area: row.get(1)?,
                     type_name: row.get(2)?,
+                })
+            })?
+            .map(|item| item.map_err(DatabaseError))
+            .collect()
+    }
+
+    pub async fn get_apartment_fees(
+        &self,
+        apartment_id: ApartmentId,
+    ) -> Result<Vec<Fee>, DatabaseError> {
+        const QUERY: &str = r#"
+            select
+                amount,
+                paid,
+                optional,
+                FeeTypes.name,
+                created_at,
+                due_on
+            from Fees
+            join FeeTypes on FeeTypes.id = Fees.type_id
+            where apartment_id = ?;
+        "#;
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
+        statement
+            .query_map(params![apartment_id], |row| {
+                Ok(Fee {
+                    amount: row.get(0)?,
+                    paid: row.get(1)?,
+                    optional: row.get(2)?,
+                    type_name: row.get(3)?,
+                    created_at: row.get(4)?,
+                    due_on: row.get(5)?,
                 })
             })?
             .map(|item| item.map_err(DatabaseError))

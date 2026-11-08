@@ -74,6 +74,16 @@ pub struct DatabaseConfig {
     pub(crate) path: PathBuf,
 }
 
+#[derive(Serialize)]
+pub struct Fee {
+    pub amount: i64,
+    pub paid: bool,
+    pub optional: bool,
+    pub type_name: String,
+    pub created_at: UnixTime,
+    pub due_on: UnixTime,
+}
+
 impl TryFrom<&Value> for FeeModificationRequest {
     type Error = FeeModificationError;
     fn try_from(value: &Value) -> Result<Self, Self::Error> {

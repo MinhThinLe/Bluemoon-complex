@@ -24,7 +24,7 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 | ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                        | DELETE       | Xóa một khoản thu                | `Admin`       |
 | ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                       | POST         | Sửa một khoản thu                | `Admin`       |
 | ✅         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                             | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
-| ❌         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ) | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
+| ✅         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ) | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
 
 # Ký pháp
 
@@ -60,7 +60,7 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 
 | Tên trường | Kiểu dữ liệu | Ghi chú                               |
 | ---------- | ------------ | ------------------------------------- |
-| `fee-type` | `string`     | Phải chưa tồn tại trong cơ sở dữ liệu |
+| `name`     | `string`     | Phải chưa tồn tại trong cơ sở dữ liệu |
 
 **Ví dụ**:
 
@@ -249,6 +249,6 @@ Không sử dụng
 
 ## Thân phản hồi
 
-| Tên trường | Kiểu dữ liệu                                                                 |
-| ---------- | ---------------------------------------------------------------------------- |
-| `fees`     | \[{ amount: `float`, paid: `bool`, optional: `bool`, type_name: `string` }\] |
+| Tên trường | Kiểu dữ liệu                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------                                             |
+| `fees`     | \[{ amount: `integer`, paid: `bool`, optional: `bool`, type-name: `string`, created-at: `unixtime`, due-on: `unixtime` }\] |
