@@ -4,7 +4,11 @@ Frontend của dự án được xây dựng bằng **React** và **Vite**.
 
 ## Cài đặt và chạy
 
-Thành viên mới (kể cả người chưa cài Node.js) xem hướng dẫn tại:
+Hướng dẫn chạy nhanh cả frontend và backend:
+
+**[RUN.md](./RUN.md)**
+
+Thành viên mới chưa cài Node.js xem hướng dẫn chi tiết tại:
 
 **[Hướng dẫn cài đặt Node.js và chạy Frontend](../docs/frontend-setup.md)**
 
