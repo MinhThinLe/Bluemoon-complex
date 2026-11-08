@@ -3,7 +3,7 @@ import LoginPage from './features/auth/pages/LoginPage.jsx'
 import FeeManagementPage from './features/fees/management/pages/FeeManagementPage.jsx'
 
 function App() {
-  const [needsLogin, setNeedsLogin] = useState(false)
+  const [needsLogin, setNeedsLogin] = useState(true)
   const [sessionVersion, setSessionVersion] = useState(0)
 
   useEffect(() => {
