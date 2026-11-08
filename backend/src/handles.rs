@@ -6,8 +6,8 @@ use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
 use bluemoon_database::{
-    Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError, FeeModificationRequest,
-    FeeType, FeeTypeError, FeeTypeId,
+    ApartmentId, Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError,
+    FeeModificationRequest, FeeType, FeeTypeError, FeeTypeId,
 };
 
 use crate::Server;
@@ -183,5 +183,22 @@ impl Server {
             .get_apartments(floor)
             .await
             .map(|content| with_status(json(&json!({ "apartments" : content})), StatusCode::OK))?)
+    }
+
+    pub async fn get_apartment_fees_handle(
+        self,
+        privilege: PrivilegeLevel,
+        apartment_id: ApartmentId,
+    ) -> Result<impl Reply, Rejection> {
+        if privilege < PrivilegeLevel::Accountant {
+            Err(UnderAuthenticated)?;
+        }
+
+        let content = self.database.get_apartment_fees(apartment_id).await?;
+
+        Ok(with_status(
+            json(&json!({ "fees": content })),
+            StatusCode::OK,
+        ))
     }
 }
