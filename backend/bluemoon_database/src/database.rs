@@ -7,8 +7,8 @@ use tokio::sync::Mutex;
 use warp::reject::Reject;
 
 use crate::tables::{
-    ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
-    User,
+    Apartment, ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType,
+    FeeTypeId, User,
 };
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
@@ -203,6 +203,35 @@ impl Database {
         transaction.commit()?;
 
         Ok(())
+    }
+
+    pub async fn get_apartments(&self, floor: i32) -> Result<Vec<Apartment>, DatabaseError> {
+        const QUERY: &str = r#"
+            select
+                Apartments.id,
+                area,
+                ApartmentTypes.name
+            from Apartments
+            join ApartmentTypes on Apartments.type_id = ApartmentTypes.id
+            where Apartments.id between ? and ?;
+        "#;
+
+        let lower_bound = floor * 100;
+        let upper_bound = (floor + 1) * 100;
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY)?;
+
+        statement
+            .query_map(params![lower_bound, upper_bound], |row| {
+                Ok(Apartment {
+                    id: row.get(0)?,
+                    area: row.get(1)?,
+                    type_name: row.get(2)?,
+                })
+            })?
+            .map(|item| item.map_err(DatabaseError))
+            .collect()
     }
 }
 

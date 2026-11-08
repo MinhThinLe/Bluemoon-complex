@@ -23,7 +23,7 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 | ✅         | [`/api/new/fee`](#Tạo-khoản-thu)                                         | POST         | Tạo khoản thu mới                | `Admin`       |
 | ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                        | DELETE       | Xóa một khoản thu                | `Admin`       |
 | ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                       | POST         | Sửa một khoản thu                | `Admin`       |
-| ❌         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                             | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
+| ✅         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                             | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
 | ❌         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ) | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
 
 # Ký pháp
@@ -221,9 +221,9 @@ Không sử dụng
 
 ## Thân phản hồi
 
-| Tên trường   | Kiểu dữ liệu                                         |
-| ----------   | ---------------------------------------------------- |
-| `apartments` | \[{ id: `integer`, area: `float`, type: `string` }\] |
+| Tên trường   | Kiểu dữ liệu                                              |
+| ----------   | --------------------------------------------------------- |
+| `apartments` | \[{ id: `integer`, area: `float`, type-name: `string` }\] |
 
 # Liệt kê các khoản phí của căn hộ
 

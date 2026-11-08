@@ -52,8 +52,21 @@ impl Server {
             .or(self.clone().new_fee())
             .or(self.clone().delete_fee())
             .or(self.clone().edit_fee())
+            .or(self.clone().get_apartments())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
+    }
+
+    fn get_apartments(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("apartments" / i32))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|floor, server: Server, privilege_level| {
+                server.get_apartments_handle(privilege_level, floor)
+            })
+            .recover(handle_rejection)
     }
 
     fn delete_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {

@@ -63,6 +63,13 @@ pub enum Apartments {
     All,
 }
 
+#[derive(Serialize, Debug)]
+pub struct Apartment {
+    pub id: ApartmentId,
+    pub area: f32,
+    pub type_name: String,
+}
+
 pub struct DatabaseConfig {
     pub(crate) path: PathBuf,
 }
