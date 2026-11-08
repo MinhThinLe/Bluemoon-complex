@@ -189,9 +189,9 @@ Việc sửa tên khoản thu là bất khả thi do tên của khoản thu khô
 
 ## Thất bại
 
-| Lý do thất bại     | Phản hồi |
-| ------------------ | -------- | 
-| `id` không tồn tại | HTTP 404 |
+| Lý do thất bại                    | Phản hồi |
+| --------------------------------- | -------- | 
+| Không có bản ghi nào được sửa đổi | HTTP 404 |
 
 ## Thân phản hồi
 
