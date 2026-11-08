@@ -29,9 +29,10 @@ Sao chép `.env.example` thành `.env.local` nếu cần đổi địa chỉ API
 VITE_API_URL=/api
 ```
 
-Phạm vi Sprint 1 gồm màn hình quản lý khoản thu nội bộ và sử dụng API thật.
-Các luồng dành cho cư dân, thanh toán và yêu cầu tra cứu chưa được đưa vào bản
-build này.
+Frontend hiện có các màn hình quản lý khoản thu, chọn khoản chưa nộp và tra cứu
+khoản cần nộp/đã nộp. Hai màn hình chọn/tra cứu sử dụng các API căn hộ và khoản
+thu hiện có; quyền truy cập cần Accountant trở lên. Backend chưa cung cấp API
+thanh toán hoặc lưu yêu cầu tra cứu, vì vậy các thao tác này chưa được thực hiện.
 
 Các lệnh kiểm tra trước khi tạo Pull Request:
 
