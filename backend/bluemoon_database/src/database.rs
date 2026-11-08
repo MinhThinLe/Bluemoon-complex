@@ -7,9 +7,10 @@ use tokio::sync::Mutex;
 
 use warp::reject::Reject;
 
-use crate::authentication::PrivilegeLevel;
-use crate::config::DatabaseConfig;
-use crate::handles::{ApartmentId, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId};
+use crate::tables::{
+    ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
+    PrivilegeLevel, User,
+};
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
 /// read from, write to it at any time.
@@ -27,13 +28,6 @@ impl From<Error> for DatabaseError {
     fn from(value: Error) -> Self {
         Self(value)
     }
-}
-
-pub struct User {
-    pub username: String,
-    pub hashed_password: String,
-    pub salt: String,
-    pub role: PrivilegeLevel,
 }
 
 const INIT_TABLES: &str = include_str!("../sql/init_tables.sql");

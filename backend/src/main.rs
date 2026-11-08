@@ -3,15 +3,15 @@
 
 mod authentication;
 mod config;
-mod database;
 mod handles;
 mod logger;
 mod server;
 
 use log::error;
 
+use bluemoon_database::Database;
+
 use crate::config::Configuration;
-use crate::database::Database;
 use crate::server::Server;
 
 #[tokio::main]

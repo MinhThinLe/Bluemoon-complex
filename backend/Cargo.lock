@@ -13,10 +13,9 @@ name = "backend"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "bluemoon_database",
  "http",
  "log",
- "rusqlite",
- "serde",
  "serde_json",
  "sha2",
  "tokio",
@@ -43,6 +42,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "bluemoon_database"
+version = "0.1.0"
+dependencies = [
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
+ "warp",
 ]
 
 [[package]]
