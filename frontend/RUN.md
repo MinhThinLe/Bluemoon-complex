@@ -53,12 +53,18 @@ VITE_API_URL=/api
 
 Khởi động lại `npm run dev` sau khi thay đổi file môi trường.
 
-## 5. Chức năng Sprint 1
+## 5. Các màn hình frontend hiện có
 
-- `/` và `/admin/fees`: quản lý khoản thu nội bộ.
+Sau khi đăng nhập, thanh điều hướng có ba màn hình:
 
-Tài khoản phải có quyền Admin theo contract API hiện tại. Các luồng cư dân,
-thanh toán và yêu cầu tra cứu thuộc Sprint 2/3 nên không có trong bản build.
+- **Quản lý khoản thu:** tạo, sửa và xóa khoản thu (API tương ứng yêu cầu Admin).
+- **Chọn khoản nộp:** chọn tầng/căn hộ, sau đó đánh dấu các khoản chưa nộp để chuyển sang màn hình tra cứu.
+- **Tra cứu khoản thu:** xem các khoản cần nộp/đã nộp và tổng tiền theo căn hộ.
+
+Hai màn hình chọn và tra cứu gọi API `/api/apartments/{floor}` và
+`/api/fee/apartment/{apartment_id}`; backend hiện yêu cầu quyền Accountant trở lên.
+Backend chưa có API thanh toán hoặc lưu yêu cầu tra cứu, nên frontend không tự
+đổi trạng thái `paid` và không giả lập việc gửi yêu cầu.
 
 ## 6. Kiểm tra trước khi push
 

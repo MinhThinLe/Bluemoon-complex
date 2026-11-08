@@ -1,0 +1,12 @@
+.bm-app-nav { display: flex; min-height: 68px; align-items: center; justify-content: space-between; gap: 20px; padding: 10px clamp(16px, 4vw, 48px); border-bottom: 1px solid #e7edf5; background: #fff; }
+.bm-app-nav__brand { display: flex; align-items: center; gap: 10px; color: #1d3558; font-size: 15px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+.bm-app-nav__brand-mark { display: grid; width: 33px; height: 33px; place-items: center; border-radius: 10px; color: #fff; background: #2864dc; font-size: 17px; }
+.bm-app-nav__links { display: flex; align-items: center; gap: 5px; }
+.bm-app-nav__links button { min-height: 38px; padding: 0 13px; border: 0; border-radius: 9px; color: #718098; background: transparent; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.bm-app-nav__links button:hover { color: #2864dc; background: #f4f7fd; }
+.bm-app-nav__links button.is-active { color: #2864dc; background: #edf4ff; }
+@media (max-width: 700px) {
+  .bm-app-nav { align-items: flex-start; flex-direction: column; gap: 8px; padding-top: 12px; padding-bottom: 9px; }
+  .bm-app-nav__links { width: 100%; overflow-x: auto; }
+  .bm-app-nav__links button { flex: 0 0 auto; padding: 0 10px; }
+}
