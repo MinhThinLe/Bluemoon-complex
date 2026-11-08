@@ -221,9 +221,9 @@ Không sử dụng
 
 ## Thân phản hồi
 
-| Tên trường   | Kiểu dữ liệu                                         |
-| ----------   | ---------------------------------------------------- |
-| `apartments` | \[{ id: `integer`, area: `float`, type: `string` }\] |
+| Tên trường   | Kiểu dữ liệu                                              |
+| ----------   | --------------------------------------------------------- |
+| `apartments` | \[{ id: `integer`, area: `float`, type-name: `string` }\] |
 
 # Liệt kê các khoản phí của căn hộ
 
