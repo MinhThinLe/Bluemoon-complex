@@ -4,12 +4,11 @@ use std::path::PathBuf;
 use std::process::exit;
 
 use log::{error, info, warn};
-
 use tokio::fs;
 
 use toml::Table;
 
-use bluemoon_database::{DatabaseConfig, PrivilegeLevel, User};
+use bluemoon_database::{DatabaseConfig, User};
 
 use crate::logger::Logger;
 
@@ -76,7 +75,7 @@ impl TryFrom<&Table> for Users {
                         username: key.clone(),
                         hashed_password: str.to_string(),
                         salt: String::new(),
-                        role: PrivilegeLevel::Admin,
+                        role: "admin".to_string(),
                     })
                 })
                 .collect(),

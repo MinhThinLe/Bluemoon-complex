@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use std::sync::Arc;
 
 use rusqlite::{Connection, Error, params};
@@ -9,7 +8,7 @@ use warp::reject::Reject;
 
 use crate::tables::{
     ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
-    PrivilegeLevel, User,
+    User,
 };
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
@@ -85,8 +84,7 @@ impl Database {
                     username: row.get(0)?,
                     hashed_password: row.get(1)?,
                     salt: row.get(2)?,
-                    role: PrivilegeLevel::from_str(&row.get::<_, String>(3)?)
-                        .expect("Invalid previledge stored in database"),
+                    role: row.get(3)?,
                 })
             })
             .ok()

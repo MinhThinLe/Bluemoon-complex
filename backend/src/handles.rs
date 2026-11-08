@@ -1,3 +1,4 @@
+use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
 use http::StatusCode;
 
 use warp::reject::Rejection;
@@ -5,11 +6,10 @@ use warp::reply::{Reply, html, json, with_status};
 
 use bluemoon_database::{
     Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError, FeeModificationRequest,
-    FeeType, FeeTypeError, FeeTypeId, PrivilegeLevel,
+    FeeType, FeeTypeError, FeeTypeId,
 };
 
 use crate::Server;
-use crate::authentication::UnderAuthenticated;
 
 impl Server {
     pub async fn new_fee_type_handle(
@@ -98,7 +98,7 @@ impl Server {
                 "Invalid Id supplied".to_string(),
                 StatusCode::BAD_REQUEST,
             ));
-        };
+        }
 
         self.database.add_fee(fee, &apartment_ids).await?;
 

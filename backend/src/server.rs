@@ -1,6 +1,9 @@
 use std::convert::Infallible;
 use std::future::ready;
 
+use bluemoon_authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+};
 use http::StatusCode;
 
 use serde_json::Value;
@@ -14,12 +17,8 @@ use warp::{Filter, path};
 
 use bluemoon_database::{
     Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
-    PrivilegeLevel,
 };
 
-use crate::authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, UnderAuthenticated,
-};
 use crate::config::ServerConfig;
 
 const API_ROOT_URL: &str = "api";
@@ -124,7 +123,11 @@ impl Server {
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         header::<String>("Authorization")
             .and(self.inject())
-            .and_then(|item, server: Server| server.process_authentication_handle(item))
+            .and_then(|item, server: Server| {
+                server
+                    .users
+                    .process_authentication_handle(item, server.database)
+            })
     }
 
     fn request_authentication(
@@ -167,11 +170,11 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     if err.is_not_found() {
         return Err(err);
     }
-    if let Some(_) = err.find::<MethodNotAllowed>() {
+    if err.find::<MethodNotAllowed>().is_some() {
         return Err(err);
     }
 
-    if let Some(_) = err.find::<BodyDeserializeError>() {
+    if err.find::<BodyDeserializeError>().is_some() {
         return Ok(with_status(html("Invalid JSON"), StatusCode::BAD_REQUEST));
     }
 
@@ -182,7 +185,7 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
             StatusCode::INTERNAL_SERVER_ERROR,
         ));
     }
-    if let Some(UnderAuthenticated) = err.find() {
+    if err.find::<UnderAuthenticated>().is_some() {
         return Ok(with_status(
             html("Under-authenticated"),
             StatusCode::FORBIDDEN,
