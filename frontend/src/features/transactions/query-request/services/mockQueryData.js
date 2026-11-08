@@ -1,0 +1,36 @@
+// Dữ liệu mẫu của lịch sử yêu cầu; thay bằng response API khi backend cung cấp endpoint.
+export const mockQueryRequests = [
+  {
+    id: 'YC-2026-028',
+    title: 'Xác nhận khoản phí quản lý tháng 10',
+    type: 'payment_confirmation',
+    typeLabel: 'Xác nhận thanh toán',
+    relatedFee: 'Phí quản lý vận hành · Tháng 10/2026',
+    description: 'Tôi đã nộp khoản phí quản lý tháng 10 tại quầy và muốn kiểm tra trạng thái đã được cập nhật trên hệ thống hay chưa.',
+    createdAt: '2026-11-04T09:20:00',
+    status: 'resolved',
+    response: 'Ban quản lý đã đối chiếu và cập nhật trạng thái thanh toán thành công. Cảm ơn bạn đã gửi yêu cầu.',
+  },
+  {
+    id: 'YC-2026-024',
+    title: 'Tra cứu cách tính phí dịch vụ',
+    type: 'fee_information',
+    typeLabel: 'Thông tin khoản thu',
+    relatedFee: 'Phí dịch vụ tiện ích · Tháng 11/2026',
+    description: 'Vui lòng cung cấp thông tin chi tiết về các hạng mục được tính trong phí dịch vụ tiện ích tháng này.',
+    createdAt: '2026-11-02T14:10:00',
+    status: 'processing',
+    response: '',
+  },
+  {
+    id: 'YC-2026-019',
+    title: 'Kiểm tra thông tin phương tiện đăng ký',
+    type: 'other',
+    typeLabel: 'Yêu cầu khác',
+    relatedFee: 'Không liên quan khoản thu',
+    description: 'Tôi muốn kiểm tra lại thông tin xe máy đang được đăng ký với căn hộ.',
+    createdAt: '2026-10-28T11:35:00',
+    status: 'waiting',
+    response: '',
+  },
+]
