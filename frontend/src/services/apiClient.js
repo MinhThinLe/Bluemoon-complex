@@ -15,7 +15,10 @@ export async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: 'include',
     ...requestOptions,
-    headers: { ...(body === undefined ? {} : { 'Content-Type': 'application/json' }), ...headers },
+    headers: {
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...headers,
+    },
     body,
   })
   const payload = await readResponse(response)
