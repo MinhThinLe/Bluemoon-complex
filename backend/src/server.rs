@@ -99,7 +99,7 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee-type"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: Value| FeeType::try_from(&json)))
+            .and(warp::body::json::<FeeType>())
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee_type, server: Server, privilege_level| {
@@ -135,7 +135,7 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("edit" / "fee"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: Value| FeeModificationRequest::try_from(&json)))
+            .and(warp::body::json::<FeeModificationRequest>())
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|request, server: Server, privilege_level| {
@@ -190,7 +190,6 @@ impl Server {
 
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     use log::{error, warn};
-    use warp::body::BodyDeserializeError;
     use warp::reject::MethodNotAllowed;
 
     if err.is_not_found() {
@@ -198,10 +197,6 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     }
     if err.find::<MethodNotAllowed>().is_some() {
         return Err(err);
-    }
-
-    if err.find::<BodyDeserializeError>().is_some() {
-        return Ok(with_status(html("Invalid JSON"), StatusCode::BAD_REQUEST));
     }
 
     if let Some(DatabaseError(db_err)) = err.find() {

@@ -6,8 +6,8 @@ use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
 use bluemoon_database::{
-    ApartmentId, Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError,
-    FeeModificationRequest, FeeType, FeeTypeError, FeeTypeId,
+    ApartmentId, Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationRequest, FeeType,
+    FeeTypeId,
 };
 
 use crate::Server;
@@ -16,20 +16,16 @@ impl Server {
     pub async fn new_fee_type_handle(
         self,
         privilege: PrivilegeLevel,
-        fee_type: Result<FeeType, FeeTypeError>,
+        fee_type: FeeType,
     ) -> Result<impl Reply, Rejection> {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
         }
-        let Ok(fee_type) = fee_type else {
-            return Ok(with_status(html("INVALID JSON"), StatusCode::BAD_REQUEST));
-        };
-
         Ok(self
             .database
             .add_fee_type(fee_type)
             .await
-            .map(|()| with_status(html("ADD FEE TYPE OK"), StatusCode::OK))?)
+            .map(|()| with_status("Add fee type ok".to_string(), StatusCode::OK))?)
     }
 
     pub async fn get_fee_types_handle(
@@ -138,30 +134,23 @@ impl Server {
     pub async fn edit_fee_handle(
         self,
         privilege: PrivilegeLevel,
-        request: Result<FeeModificationRequest, FeeModificationError>,
+        request: FeeModificationRequest,
     ) -> Result<impl Reply, Rejection> {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
         }
 
-        let request = match request {
-            Ok(request) => request,
-            Err(error) => {
-                return Ok(with_status(
-                    error.rejection_message(),
-                    StatusCode::BAD_REQUEST,
-                ));
-            }
-        };
-
-        if self.database.modify_fee(request).await? == 0 {
-            return Ok(with_status(
-                "No records altered".to_string(),
-                StatusCode::NOT_FOUND,
-            ));
+        if let Some(amount) = request.amount
+            && amount <= 0
+        {
+            return Ok(with_status("Invalid amount", StatusCode::BAD_REQUEST));
         }
 
-        Ok(with_status("Modify OK".to_string(), StatusCode::OK))
+        if self.database.modify_fee(request).await? == 0 {
+            return Ok(with_status("No records altered", StatusCode::NOT_FOUND));
+        }
+
+        Ok(with_status("Modify OK", StatusCode::OK))
     }
 
     pub async fn get_apartments_handle(
