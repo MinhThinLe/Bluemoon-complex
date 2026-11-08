@@ -1,6 +1,7 @@
 use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
 use http::StatusCode;
 
+use serde_json::json;
 use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
@@ -158,5 +159,29 @@ impl Server {
             .modify_fee(request)
             .await
             .map(|()| with_status("Modify OK".to_string(), StatusCode::OK))?)
+    }
+
+    pub async fn get_apartments_handle(
+        self,
+        privilege: PrivilegeLevel,
+        floor: i32,
+    ) -> Result<impl Reply, Rejection> {
+        const FLOOR_LIMIT: i32 = 30;
+        if privilege < PrivilegeLevel::Accountant {
+            Err(UnderAuthenticated)?;
+        }
+
+        if floor < 0 || floor > FLOOR_LIMIT {
+            return Ok(with_status(
+                json(&json!({ "error": "Invalid floor" })),
+                StatusCode::BAD_REQUEST,
+            ));
+        }
+
+        Ok(self
+            .database
+            .get_apartments(floor)
+            .await
+            .map(|content| with_status(json(&json!({ "apartments" : content})), StatusCode::OK))?)
     }
 }
