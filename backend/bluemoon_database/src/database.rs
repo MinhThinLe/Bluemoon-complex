@@ -169,7 +169,10 @@ impl Database {
         Ok(database.execute(QUERY, params![fee_type]).map(|_| ())?)
     }
 
-    pub async fn modify_fee(&self, request: FeeModificationRequest) -> Result<(), DatabaseError> {
+    pub async fn modify_fee(
+        &self,
+        request: FeeModificationRequest,
+    ) -> Result<usize, DatabaseError> {
         const MODIFY_AMOUNT: &str =
             "update Fees set amount = ? where type_id = ? and apartment_id = ?";
         const MODIFY_STATUS: &str =
@@ -181,20 +184,22 @@ impl Database {
         let transaction = database
             .transaction()
             .expect("Unable to start a transaction");
+
+        let mut modified = 0;
         if let Some(new_amount) = request.amount {
-            transaction.execute(
+            modified += transaction.execute(
                 MODIFY_AMOUNT,
                 params![new_amount, request.type_id, request.apartment_id],
             )?;
         }
         if let Some(new_status) = request.paid {
-            transaction.execute(
+            modified += transaction.execute(
                 MODIFY_STATUS,
                 params![new_status, request.type_id, request.apartment_id],
             )?;
         }
         if let Some(new_optional) = request.optional {
-            transaction.execute(
+            modified += transaction.execute(
                 MODIFY_OPTIONAL,
                 params![new_optional, request.type_id, request.apartment_id],
             )?;
@@ -202,7 +207,7 @@ impl Database {
 
         transaction.commit()?;
 
-        Ok(())
+        Ok(modified)
     }
 
     pub async fn get_apartments(&self, floor: i32) -> Result<Vec<Apartment>, DatabaseError> {

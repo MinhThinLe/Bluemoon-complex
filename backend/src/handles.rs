@@ -154,11 +154,14 @@ impl Server {
             }
         };
 
-        Ok(self
-            .database
-            .modify_fee(request)
-            .await
-            .map(|()| with_status("Modify OK".to_string(), StatusCode::OK))?)
+        if self.database.modify_fee(request).await? == 0 {
+            return Ok(with_status(
+                "No records altered".to_string(),
+                StatusCode::NOT_FOUND,
+            ));
+        }
+
+        Ok(with_status("Modify OK".to_string(), StatusCode::OK))
     }
 
     pub async fn get_apartments_handle(
