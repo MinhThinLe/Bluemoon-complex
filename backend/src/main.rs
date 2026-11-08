@@ -1,7 +1,6 @@
 #![deny(clippy::pedantic, clippy::complexity, clippy::perf)]
 #![allow(clippy::cast_possible_truncation)]
 
-mod authentication;
 mod config;
 mod handles;
 mod logger;

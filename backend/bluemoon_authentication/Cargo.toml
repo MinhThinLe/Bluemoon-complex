@@ -1,0 +1,23 @@
+[package]
+name = "bluemoon_authentication"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bluemoon_database = { path = "../bluemoon_database" }
+
+warp = {
+    version = "0.4",
+    default-features = false,
+}
+tokio = {
+    version = "1",
+    features = [ "sync" ],
+}
+sha2 = {
+    version = "0.10",
+    default-features = false,
+}
+
+base64 = "0.22.1"
+http = "1.5.0"

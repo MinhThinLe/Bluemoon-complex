@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use std::sync::Arc;
 
 use rusqlite::{Connection, Error, params};
@@ -8,8 +7,8 @@ use tokio::sync::Mutex;
 use warp::reject::Reject;
 
 use crate::tables::{
-    ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
-    PrivilegeLevel, User,
+    Apartment, ApartmentId, DatabaseConfig, Fee, FeeAdditionRequest, FeeModificationRequest,
+    FeeType, FeeTypeId, User,
 };
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
@@ -85,8 +84,7 @@ impl Database {
                     username: row.get(0)?,
                     hashed_password: row.get(1)?,
                     salt: row.get(2)?,
-                    role: PrivilegeLevel::from_str(&row.get::<_, String>(3)?)
-                        .expect("Invalid previledge stored in database"),
+                    role: row.get(3)?,
                 })
             })
             .ok()
@@ -205,6 +203,69 @@ impl Database {
         transaction.commit()?;
 
         Ok(())
+    }
+
+    pub async fn get_apartments(&self, floor: i32) -> Result<Vec<Apartment>, DatabaseError> {
+        const QUERY: &str = r#"
+            select
+                Apartments.id,
+                area,
+                ApartmentTypes.name
+            from Apartments
+            join ApartmentTypes on Apartments.type_id = ApartmentTypes.id
+            where Apartments.id between ? and ?;
+        "#;
+
+        let lower_bound = floor * 100;
+        let upper_bound = (floor + 1) * 100;
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY)?;
+
+        statement
+            .query_map(params![lower_bound, upper_bound], |row| {
+                Ok(Apartment {
+                    id: row.get(0)?,
+                    area: row.get(1)?,
+                    type_name: row.get(2)?,
+                })
+            })?
+            .map(|item| item.map_err(DatabaseError))
+            .collect()
+    }
+
+    pub async fn get_apartment_fees(
+        &self,
+        apartment_id: ApartmentId,
+    ) -> Result<Vec<Fee>, DatabaseError> {
+        const QUERY: &str = r#"
+            select
+                amount,
+                paid,
+                optional,
+                FeeTypes.name,
+                created_at,
+                due_on
+            from Fees
+            join FeeTypes on FeeTypes.id = Fees.type_id
+            where apartment_id = ?;
+        "#;
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
+        statement
+            .query_map(params![apartment_id], |row| {
+                Ok(Fee {
+                    amount: row.get(0)?,
+                    paid: row.get(1)?,
+                    optional: row.get(2)?,
+                    type_name: row.get(3)?,
+                    created_at: row.get(4)?,
+                    due_on: row.get(5)?,
+                })
+            })?
+            .map(|item| item.map_err(DatabaseError))
+            .collect()
     }
 }
 

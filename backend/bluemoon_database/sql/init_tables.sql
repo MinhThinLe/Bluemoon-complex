@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS Fees (
     amount INTEGER NOT NULL CHECK (amount > 0),
     paid BOOLEAN NOT NULL,
     optional BOOLEAN NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (datetime('now')),
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     due_on INTEGER NOT NULL,
     type_id INTEGER NOT NULL,
     apartment_id INTEGER NOT NULL,

@@ -12,12 +12,11 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 name = "backend"
 version = "0.1.0"
 dependencies = [
- "base64",
+ "bluemoon_authentication",
  "bluemoon_database",
  "http",
  "log",
  "serde_json",
- "sha2",
  "tokio",
  "toml",
  "warp",
@@ -42,6 +41,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "bluemoon_authentication"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bluemoon_database",
+ "http",
+ "sha2",
+ "tokio",
+ "warp",
 ]
 
 [[package]]

@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use serde::Serialize;
 
@@ -20,18 +19,11 @@ pub enum FeeTypeError {
     NoNameKey,
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd)]
-pub enum PrivilegeLevel {
-    Resident,
-    Accountant,
-    Admin,
-}
-
 pub struct User {
     pub username: String,
     pub hashed_password: String,
     pub salt: String,
-    pub role: PrivilegeLevel,
+    pub role: String,
 }
 
 pub struct FeeAdditionRequest {
@@ -71,20 +63,25 @@ pub enum Apartments {
     All,
 }
 
+#[derive(Serialize, Debug)]
+pub struct Apartment {
+    pub id: ApartmentId,
+    pub area: f32,
+    pub type_name: String,
+}
+
 pub struct DatabaseConfig {
     pub(crate) path: PathBuf,
 }
 
-impl FromStr for PrivilegeLevel {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s.to_lowercase().as_str() {
-            "resident" => Self::Resident,
-            "accountant" => Self::Accountant,
-            "admin" => Self::Admin,
-            _other => return Err(()),
-        })
-    }
+#[derive(Serialize)]
+pub struct Fee {
+    pub amount: i64,
+    pub paid: bool,
+    pub optional: bool,
+    pub type_name: String,
+    pub created_at: UnixTime,
+    pub due_on: UnixTime,
 }
 
 impl TryFrom<&Value> for FeeModificationRequest {

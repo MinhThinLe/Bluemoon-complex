@@ -1,15 +1,16 @@
+use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
 use http::StatusCode;
 
+use serde_json::json;
 use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
 use bluemoon_database::{
-    Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError, FeeModificationRequest,
-    FeeType, FeeTypeError, FeeTypeId, PrivilegeLevel,
+    ApartmentId, Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationError,
+    FeeModificationRequest, FeeType, FeeTypeError, FeeTypeId,
 };
 
 use crate::Server;
-use crate::authentication::UnderAuthenticated;
 
 impl Server {
     pub async fn new_fee_type_handle(
@@ -98,7 +99,7 @@ impl Server {
                 "Invalid Id supplied".to_string(),
                 StatusCode::BAD_REQUEST,
             ));
-        };
+        }
 
         self.database.add_fee(fee, &apartment_ids).await?;
 
@@ -158,5 +159,46 @@ impl Server {
             .modify_fee(request)
             .await
             .map(|()| with_status("Modify OK".to_string(), StatusCode::OK))?)
+    }
+
+    pub async fn get_apartments_handle(
+        self,
+        privilege: PrivilegeLevel,
+        floor: i32,
+    ) -> Result<impl Reply, Rejection> {
+        const FLOOR_LIMIT: i32 = 30;
+        if privilege < PrivilegeLevel::Accountant {
+            Err(UnderAuthenticated)?;
+        }
+
+        if !(0..=FLOOR_LIMIT).contains(&floor) {
+            return Ok(with_status(
+                json(&json!({ "error": "Invalid floor" })),
+                StatusCode::BAD_REQUEST,
+            ));
+        }
+
+        Ok(self
+            .database
+            .get_apartments(floor)
+            .await
+            .map(|content| with_status(json(&json!({ "apartments" : content})), StatusCode::OK))?)
+    }
+
+    pub async fn get_apartment_fees_handle(
+        self,
+        privilege: PrivilegeLevel,
+        apartment_id: ApartmentId,
+    ) -> Result<impl Reply, Rejection> {
+        if privilege < PrivilegeLevel::Accountant {
+            Err(UnderAuthenticated)?;
+        }
+
+        let content = self.database.get_apartment_fees(apartment_id).await?;
+
+        Ok(with_status(
+            json(&json!({ "fees": content })),
+            StatusCode::OK,
+        ))
     }
 }

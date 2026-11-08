@@ -1,6 +1,9 @@
 use std::convert::Infallible;
 use std::future::ready;
 
+use bluemoon_authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+};
 use http::StatusCode;
 
 use serde_json::Value;
@@ -14,12 +17,8 @@ use warp::{Filter, path};
 
 use bluemoon_database::{
     Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
-    PrivilegeLevel,
 };
 
-use crate::authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, UnderAuthenticated,
-};
 use crate::config::ServerConfig;
 
 const API_ROOT_URL: &str = "api";
@@ -53,8 +52,34 @@ impl Server {
             .or(self.clone().new_fee())
             .or(self.clone().delete_fee())
             .or(self.clone().edit_fee())
+            .or(self.clone().get_apartments())
+            .or(self.clone().get_apartment_fees())
             .or(self.clone().process_authentication())
             .or(self.request_authentication())
+    }
+
+    fn get_apartments(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("apartments" / i32))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|floor, server: Server, privilege_level| {
+                server.get_apartments_handle(privilege_level, floor)
+            })
+            .recover(handle_rejection)
+    }
+
+    fn get_apartment_fees(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("fee" / "apartment" / i32))
+            .and(self.clone().inject())
+            .and(self.clone().auth_token())
+            .and_then(|id, server: Server, privilege_level| {
+                server.get_apartment_fees_handle(privilege_level, id)
+            })
+            .recover(handle_rejection)
     }
 
     fn delete_fee(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -124,7 +149,11 @@ impl Server {
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
         header::<String>("Authorization")
             .and(self.inject())
-            .and_then(|item, server: Server| server.process_authentication_handle(item))
+            .and_then(|item, server: Server| {
+                server
+                    .users
+                    .process_authentication_handle(item, server.database)
+            })
     }
 
     fn request_authentication(
@@ -167,11 +196,11 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     if err.is_not_found() {
         return Err(err);
     }
-    if let Some(_) = err.find::<MethodNotAllowed>() {
+    if err.find::<MethodNotAllowed>().is_some() {
         return Err(err);
     }
 
-    if let Some(_) = err.find::<BodyDeserializeError>() {
+    if err.find::<BodyDeserializeError>().is_some() {
         return Ok(with_status(html("Invalid JSON"), StatusCode::BAD_REQUEST));
     }
 
@@ -182,7 +211,7 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
             StatusCode::INTERNAL_SERVER_ERROR,
         ));
     }
-    if let Some(UnderAuthenticated) = err.find() {
+    if err.find::<UnderAuthenticated>().is_some() {
         return Ok(with_status(
             html("Under-authenticated"),
             StatusCode::FORBIDDEN,
