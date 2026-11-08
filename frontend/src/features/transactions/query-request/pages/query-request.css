@@ -1,5 +1,6 @@
 .bm-query-heading { align-items: center; }
 .bm-query-heading .bm-button { flex: 0 0 auto; }
+.bm-query-capability-notice { margin-bottom: 17px; }
 .bm-query-welcome { position: relative; display: flex; min-height: 177px; overflow: hidden; align-items: center; justify-content: space-between; margin-bottom: 17px; padding: 22px 29px; border: 1px solid #dae7fa; border-radius: 16px; background: linear-gradient(108deg, #eaf2ff 0%, #f2f7ff 50%, #e9f2ff 100%); }
 .bm-query-welcome::after { position: absolute; top: -70px; right: 25%; width: 240px; height: 240px; border: 1px solid rgba(112, 155, 223, .13); border-radius: 50%; content: ''; }
 .bm-query-welcome__copy { position: relative; z-index: 2; max-width: 470px; }
@@ -7,6 +8,7 @@
 .bm-query-welcome h2 { margin: 9px 0 7px; color: #29466f; font-size: clamp(17px, 2vw, 21px); font-weight: 800; letter-spacing: -.45px; }
 .bm-query-welcome p { max-width: 420px; margin: 0; color: #7c91b0; font-size: 10px; line-height: 1.65; }
 .bm-query-welcome__copy button { display: inline-flex; align-items: center; gap: 7px; margin-top: 13px; padding: 0; border: 0; color: #316dce; background: transparent; font-size: 10px; font-weight: 800; }
+.bm-query-welcome__copy button:disabled { opacity: .5; cursor: not-allowed; }
 .bm-query-illustration { position: relative; z-index: 1; width: 210px; height: 145px; flex: 0 0 auto; margin-right: 21px; }
 .bm-query-illustration__halo { position: absolute; right: 4px; bottom: -32px; width: 170px; height: 170px; border-radius: 50%; background: rgba(255,255,255,.46); }
 .bm-query-illustration__building { position: absolute; right: 32px; bottom: -12px; display: grid; width: 87px; height: 126px; grid-template-columns: repeat(3, 1fr); gap: 8px 7px; padding: 17px 12px 12px; border: 1px solid #a9c4eb; border-bottom: 0; border-radius: 8px 8px 0 0; background: linear-gradient(155deg, #c7dcfb, #8fb5ec); box-shadow: 8px 7px 0 rgba(99, 145, 212, .13); }
@@ -32,12 +34,7 @@
 .bm-request-search .bm-field { gap: 0; }
 .bm-request-search .bm-input { min-height: 36px; border-color: #edf1f6; background: #fbfcfe; font-size: 9px; }
 .bm-request-search .bm-field__icon { left: 11px; }
-.bm-request-filters { display: flex; align-items: center; gap: 5px; overflow-x: auto; margin-top: 16px; padding: 0 18px; border-bottom: 1px solid #edf1f6; }
-.bm-request-filters button { display: inline-flex; align-items: center; gap: 7px; min-height: 41px; padding: 0 11px; border: 0; border-bottom: 2px solid transparent; color: #8996a8; background: transparent; font-size: 9px; font-weight: 600; white-space: nowrap; }
-.bm-request-filters button:hover { color: #376fc8; }
-.bm-request-filters button.is-active { border-bottom-color: #3976dc; color: #2d67c9; font-weight: 800; }
-.bm-request-filters button span { min-width: 17px; padding: 2px 5px; border-radius: 10px; color: #8e9bae; background: #f0f3f8; font-size: 8px; text-align: center; }
-.bm-request-filters button.is-active span { color: #3971cb; background: #eaf2ff; }
+.bm-request-filters { overflow-x: auto; margin-top: 16px; padding: 0 18px 13px; border-bottom: 1px solid #edf1f6; }
 .bm-request-table .bm-table th:first-child, .bm-request-table .bm-table td:first-child { padding-left: 19px; }
 .bm-request-table .bm-table th:last-child, .bm-request-table .bm-table td:last-child { padding-right: 17px; }
 .bm-request-code span, .bm-request-code small, .bm-request-title strong, .bm-request-title small { display: block; }
@@ -54,8 +51,6 @@
 .bm-request-panel__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid #edf1f6; color: #9ca8b7; background: #fbfcfe; font-size: 8px; }
 .bm-request-panel__foot span:last-child { display: inline-flex; align-items: center; gap: 5px; }
 .bm-request-panel__foot svg { color: #91a5c4; }
-.bm-query-state { display: flex; min-height: 175px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #8f9caf; font-size: 10px; }
-.bm-query-state--error { color: #b35a5a; }
 .bm-query-form { display: flex; flex-direction: column; gap: 16px; }
 .bm-query-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
 .bm-query-form .bm-input { font-size: 11px; }

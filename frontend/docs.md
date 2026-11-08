@@ -65,7 +65,7 @@ frontend/src/
 ├── layouts/      # Bố cục trang
 ├── pages/        # Các màn hình
 ├── services/     # Hàm gọi API
-├── mocks/        # Dữ liệu mẫu phục vụ phát triển
+├── services/     # Client và bộ chuyển đổi dữ liệu từ API
 ├── styles/       # Kiểu giao diện dùng chung
 └── utils/        # Hàm hỗ trợ định dạng và xử lý dữ liệu
 ```

@@ -1,8 +1,3 @@
-.bm-page { width: 100%; }
-.bm-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 6px 0 22px; }
-.bm-eyebrow { margin-bottom: 8px; color: #6e91c7; font-size: 9px; font-weight: 800; letter-spacing: 1.15px; }
-.bm-page-heading h1 { margin: 0; color: #1c2d47; font-size: clamp(23px, 2.4vw, 29px); font-weight: 800; letter-spacing: -.8px; line-height: 1.25; }
-.bm-page-heading p { margin: 8px 0 0; color: #8592a5; font-size: 11px; line-height: 1.5; }
 .bm-heading-apartment { display: flex; align-items: center; gap: 9px; padding: 8px 11px; border: 1px solid #e5ebf3; border-radius: 11px; background: #fff; }
 .bm-heading-apartment > span { display: grid; width: 33px; height: 33px; place-items: center; border-radius: 9px; color: #3975db; background: #edf4ff; }
 .bm-heading-apartment small, .bm-heading-apartment strong { display: block; }
@@ -25,17 +20,10 @@
 .bm-stat-dot--violet { background: #9c8bd9; }
 
 .bm-payment-layout { display: grid; grid-template-columns: minmax(0, 1fr) 292px; align-items: start; gap: 17px; }
-.bm-panel, .bm-summary-card { border: 1px solid #e8edf4; border-radius: 15px; background: #fff; box-shadow: 0 7px 22px rgba(30,57,99,.035); }
+.bm-summary-card { border: 1px solid #e8edf4; border-radius: var(--bm-radius-lg); background: #fff; box-shadow: var(--bm-shadow-soft); }
 .bm-fee-panel { min-width: 0; padding: 19px 18px 0; }
-.bm-panel__heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.bm-panel__heading h2 { margin: 0; color: #293b55; font-size: 14px; font-weight: 800; }
-.bm-panel__heading p { margin: 5px 0 0; color: #95a0b0; font-size: 10px; }
 .bm-count-pill { padding: 5px 9px; border-radius: 20px; color: #6e83a2; background: #f2f6fc; font-size: 9px; font-weight: 700; }
 .bm-fee-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-bottom: 13px; border-bottom: 1px solid #edf1f6; }
-.bm-tabs { display: flex; align-items: center; gap: 4px; }
-.bm-tabs button { padding: 8px 11px; border: 0; border-radius: 8px; color: #8794a7; background: transparent; font-size: 10px; font-weight: 600; white-space: nowrap; }
-.bm-tabs button:hover { color: #356dce; background: #f6f9ff; }
-.bm-tabs button.is-active { color: #2d67ce; background: #edf4ff; font-weight: 800; }
 .bm-fee-search { width: 190px; }
 .bm-fee-search .bm-field { gap: 0; }
 .bm-fee-search .bm-input { min-height: 35px; border-color: #edf1f6; border-radius: 9px; background: #fbfcfe; font-size: 10px; }
@@ -69,12 +57,6 @@
 .bm-fee-item__amount small { display: block; margin-top: 5px; color: #a2adba; font-size: 8px; }
 .bm-fee-panel__note { display: flex; align-items: center; gap: 7px; margin: 0 -18px; padding: 11px 18px; border-top: 1px solid #edf1f6; border-radius: 0 0 15px 15px; color: #91a0b5; background: #fbfcfe; font-size: 9px; }
 .bm-fee-panel__note svg { flex: 0 0 auto; color: #7e9bc7; }
-.bm-state-block { display: flex; min-height: 150px; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: #94a0b1; font-size: 11px; }
-.bm-state-block svg { color: #9aabc3; }
-.bm-state-block--error { color: #b35a5a; }
-.bm-loader { width: 22px; height: 22px; border: 2px solid #e1eafa; border-top-color: #3976dd; border-radius: 50%; animation: bm-spin .8s linear infinite; }
-@keyframes bm-spin { to { transform: rotate(360deg); } }
-
 .bm-payment-summary { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 12px; }
 .bm-summary-card { padding: 17px 16px 15px; }
 .bm-summary-card__header { display: flex; align-items: center; justify-content: space-between; }
@@ -118,14 +100,6 @@
 .bm-confirm-method { padding-top: 11px; border-top: 1px dashed #e8edf4; font-size: 10px; }
 .bm-confirm-method strong { color: #52647f; }
 .bm-form-error { display: flex; align-items: center; gap: 6px; color: #c05050; font-size: 10px; }
-.bm-payment-success { display: flex; flex-direction: column; align-items: center; padding: 5px 5px 10px; text-align: center; }
-.bm-payment-success__icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 50%; color: #22956b; background: #e8f8f0; }
-.bm-payment-success h3 { margin: 13px 0 5px; color: #2b405d; font-size: 16px; }
-.bm-payment-success p { color: #8290a4; font-size: 10px; }
-.bm-payment-success p strong { color: #2864c9; }
-.bm-payment-success__notice { display: flex; align-items: flex-start; gap: 7px; margin-top: 17px; padding: 11px; border-radius: 9px; color: #8b7448; background: #fff8eb; font-size: 9px; line-height: 1.5; text-align: left; }
-.bm-payment-success__notice svg { flex: 0 0 auto; }
-
 @media (max-width: 1120px) {
   .bm-payment-layout { grid-template-columns: minmax(0, 1fr) 270px; }
   .bm-payment-stats { gap: 10px; }
@@ -137,7 +111,6 @@
   .bm-payment-summary { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .65fr); align-items: start; }
 }
 @media (max-width: 620px) {
-  .bm-page-heading { align-items: flex-start; flex-direction: column; margin-top: 3px; }
   .bm-heading-apartment { align-self: stretch; }
   .bm-payment-stats { grid-template-columns: 1fr 1fr; }
   .bm-stat-card:last-child { grid-column: span 2; }
@@ -146,8 +119,6 @@
   .bm-payment-summary { display: flex; }
   .bm-fee-panel { padding: 15px 12px 0; }
   .bm-fee-toolbar { align-items: stretch; flex-direction: column; }
-  .bm-tabs { overflow-x: auto; }
-  .bm-tabs button { padding: 7px 9px; font-size: 9px; }
   .bm-fee-search { width: 100%; }
   .bm-fee-panel__note { margin-right: -12px; margin-left: -12px; padding-right: 12px; padding-left: 12px; }
   .bm-fee-item { gap: 8px; padding: 13px 1px; }

@@ -20,7 +20,13 @@
   --bm-surface: #ffffff;
   --bm-background: #f5f8fd;
   --bm-green: #16845b;
+  --bm-danger: #b54747;
+  --bm-warning: #b77d32;
+  --bm-radius-sm: 8px;
+  --bm-radius-md: 12px;
+  --bm-radius-lg: 15px;
   --bm-shadow: 0 12px 32px rgba(30, 57, 99, 0.06);
+  --bm-shadow-soft: 0 7px 22px rgba(30, 57, 99, 0.035);
 }
 
 * { box-sizing: border-box; }

@@ -91,7 +91,6 @@ export default function ResidentLayout({ currentPage, onNavigate, children }) {
         </header>
 
         <main className="bm-content">
-          <div className="bm-demo-banner"><Icon name="info" size={15} /><span>Giao diện bản thử nghiệm — dữ liệu hiện tại là dữ liệu minh họa, chưa phát sinh giao dịch thật.</span></div>
           {children}
           <footer className="bm-footer"><span>© {new Date().getFullYear()} Bluemoon Resident Portal</span><span>Không gian sống an tâm, kết nối thuận tiện.</span></footer>
         </main>

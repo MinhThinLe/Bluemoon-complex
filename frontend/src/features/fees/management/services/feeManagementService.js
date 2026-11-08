@@ -7,13 +7,13 @@ export function getFeeTypes() {
 export function createFee({ amount, apartmentIds, feeTypeId, optional, dueOn }) {
   return apiRequest('/new/fee', {
     method: 'POST',
-    body: JSON.stringify({
+    body: {
       amount: Number(amount),
       for: apartmentIds === 'all' ? 'all' : apartmentIds.map(Number),
       type: Number(feeTypeId),
       optional: Boolean(optional),
       'due-on': Math.floor(new Date(`${dueOn}T23:59:59`).getTime() / 1000),
-    }),
+    },
   })
 }
 
@@ -22,7 +22,7 @@ export function updateFee({ feeTypeId, apartmentId, amount, optional, paid }) {
   if (amount !== '') payload.amount = Number(amount)
   if (optional !== '') payload.optional = optional === true || optional === 'true'
   if (paid !== '') payload.paid = paid === true || paid === 'true'
-  return apiRequest('/edit/fee', { method: 'POST', body: JSON.stringify(payload) })
+  return apiRequest('/edit/fee', { method: 'POST', body: payload })
 }
 
 export function deleteFeesByType(feeTypeId) {

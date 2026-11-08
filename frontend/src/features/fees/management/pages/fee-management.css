@@ -1,16 +1,12 @@
 .fee-admin-page { min-height: 100vh; padding: 36px; color: var(--bm-ink); background: var(--bm-background); }
-.fee-admin-header { display: flex; max-width: 1180px; align-items: flex-start; justify-content: space-between; gap: 24px; margin: 0 auto 24px; }
-.fee-admin-header h1 { margin: 5px 0 8px; color: #182b48; font-size: 30px; letter-spacing: 0; }
-.fee-admin-header > div > p:last-child { margin: 0; color: var(--bm-muted); font-size: 13px; }
-.fee-admin-eyebrow { margin: 0; color: var(--bm-blue); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.fee-admin-notice { max-width: 1180px; margin: 0 auto 18px; padding: 13px 15px; border: 1px solid; border-radius: 8px; font-size: 12px; }
-.fee-admin-notice.is-success { border-color: #bde7d5; color: #146747; background: #edf9f4; }
-.fee-admin-notice.is-error { border-color: #f0c7c7; color: #9d3939; background: #fff3f3; }
+.fee-admin-header { max-width: 1180px; align-items: flex-start; margin: 0 auto 24px; }
+.fee-admin-header .bm-page-heading__description { font-size: 13px; }
+.fee-admin-notice { max-width: 1180px; margin: 0 auto 18px; font-size: 12px; }
 .fee-admin-grid { display: grid; max-width: 1180px; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 20px; margin: 0 auto 20px; }
-.fee-admin-card { overflow: hidden; border: 1px solid var(--bm-border); border-radius: 8px; background: var(--bm-surface); box-shadow: var(--bm-shadow); }
+.fee-admin-card { overflow: hidden; }
 .fee-admin-card__body { padding: 24px; }
 .fee-admin-card__heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid var(--bm-border); }
-.fee-admin-card__heading h2 { margin: 4px 0 0; color: #273a58; font-size: 17px; }
+.fee-admin-card__heading h2 { font-size: 17px; }
 .fee-admin-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--bm-border); }
 .fee-admin-tabs button { min-height: 50px; border: 0; border-bottom: 3px solid transparent; color: #78869a; background: #fafcff; font-size: 12px; font-weight: 700; }
 .fee-admin-tabs button.is-active { border-bottom-color: var(--bm-blue); color: var(--bm-blue); background: #fff; }
@@ -27,5 +23,5 @@
 .fee-admin-status { display: inline-flex; padding: 4px 8px; border-radius: 999px; color: #16704e; background: #e9f8f1; font-size: 10px; font-weight: 700; }
 .fee-admin-danger-copy strong { color: #9d3939; font-size: 15px; }
 .fee-admin-danger-copy p { margin: 10px 0 0; color: #68778d; font-size: 12px; line-height: 1.7; }
-@media (max-width: 800px) { .fee-admin-page { padding: 24px 18px; } .fee-admin-grid { grid-template-columns: 1fr; } .fee-admin-header { flex-direction: column; } }
+@media (max-width: 800px) { .fee-admin-page { padding: 24px 18px; } .fee-admin-grid { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .fee-admin-form { grid-template-columns: 1fr; } .fee-admin-form > * { grid-column: auto; } .fee-admin-page { padding: 18px 12px; } }

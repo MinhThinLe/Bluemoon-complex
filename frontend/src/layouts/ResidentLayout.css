@@ -48,8 +48,6 @@
 .bm-profile__details span { padding-top: 3px; color: #9aa6b5; font-size: 9px; }
 .bm-profile > svg { margin-left: 4px; color: #9ba8b8; transform: rotate(0); }
 .bm-content { width: min(100%, 1530px); min-height: calc(100vh - 70px); margin: 0 auto; padding: 21px 38px 16px; }
-.bm-demo-banner { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 9px 12px; border: 1px solid #e3ecfb; border-radius: 9px; color: #6981a3; background: #f3f7ff; font-size: 9px; line-height: 1.45; }
-.bm-demo-banner svg { flex: 0 0 auto; color: #5e8ad7; }
 .bm-footer { display: flex; justify-content: space-between; gap: 15px; padding-top: 23px; color: #a1adbc; font-size: 9px; }
 .bm-mobile-menu { display: none; }
 .bm-sidebar-scrim { display: none; }
@@ -77,5 +75,4 @@
   .bm-profile__avatar { width: 33px; height: 33px; }
   .bm-content { padding: 14px 13px 12px; }
   .bm-footer { flex-direction: column; gap: 5px; }
-  .bm-demo-banner { align-items: flex-start; font-size: 8px; }
 }

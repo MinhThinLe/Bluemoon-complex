@@ -1,0 +1,12 @@
+.bm-login-page { display: grid; min-height: 100vh; place-items: center; padding: 24px; background: var(--bm-background); }
+.bm-login-panel { width: min(100%, 430px); padding: 30px; border: 1px solid var(--bm-border); border-radius: var(--bm-radius-lg); background: var(--bm-surface); box-shadow: var(--bm-shadow); }
+.bm-login-brand { display: flex; align-items: center; gap: 11px; padding-bottom: 26px; border-bottom: 1px solid var(--bm-border); }
+.bm-login-brand > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: var(--bm-radius-md); color: #fff; background: var(--bm-blue); }
+.bm-login-brand strong, .bm-login-brand small { display: block; }
+.bm-login-brand strong { color: var(--bm-ink); font-size: 20px; font-weight: 800; }
+.bm-login-brand small { margin-top: 4px; color: var(--bm-muted); font-size: 8px; font-weight: 700; letter-spacing: 1px; }
+.bm-login-copy { padding: 27px 0 21px; }
+.bm-login-copy h1 { margin: 0; color: var(--bm-ink); font-size: 27px; }
+.bm-login-copy > p:last-child { margin: 9px 0 0; color: var(--bm-muted); font-size: 12px; line-height: 1.6; }
+.bm-login-form { display: flex; flex-direction: column; gap: 17px; margin-top: 19px; }
+@media (max-width: 520px) { .bm-login-page { padding: 12px; } .bm-login-panel { padding: 23px 19px; } }

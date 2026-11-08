@@ -4,7 +4,7 @@ Phạm vi: phần frontend do Hoàng Minh Tuấn phụ trách theo phân công t
 
 ## Màn hình đã triển khai
 
-- **Khoản nộp (`fees/payment-selection`)**: tổng quan khoản chưa thanh toán/đã thanh toán, tìm kiếm, lọc trạng thái, chọn nhiều khoản, tổng tiền, chọn phương thức dự kiến và tạo phiếu thanh toán demo.
+- **Khoản nộp (`fees/payment-selection`)**: tải khoản thu của căn hộ từ API, tổng hợp trạng thái, tìm kiếm, lọc và chọn nhiều khoản.
 - **Yêu cầu tra cứu (`transactions/query-request`)**: thống kê yêu cầu, tìm kiếm/lọc theo trạng thái, tạo yêu cầu có kiểm tra dữ liệu, xem chi tiết và phản hồi mẫu.
 - **UI dùng chung**: `Button`, `Input`, `Select`, `Table`, `Modal`, `Icon` trong `src/components/ui`.
 
@@ -17,13 +17,14 @@ npm install
 npm run dev
 ```
 
-Dữ liệu đang là dữ liệu demo. Mặc định `VITE_USE_MOCK_DATA` được xem là bật; có thể tạo file `.env` trong `frontend` với:
+Frontend gọi API cùng origin qua `/api`. Trong môi trường Vite, proxy chuyển request đến backend tại `127.0.0.1:3030`. Có thể chọn căn hộ hiển thị trong `.env.local`:
 
 ```env
-VITE_USE_MOCK_DATA=true
+VITE_API_URL=/api
+VITE_RESIDENT_APARTMENT_ID=1208
 ```
 
-Khi backend sẵn sàng, cần thống nhất endpoint và cấu trúc request/response trước khi đặt `VITE_USE_MOCK_DATA=false` và thay phần `TODO` trong các service.
+Backend hiện có endpoint đọc khoản thu nhưng chưa có endpoint tạo giao dịch thanh toán hoặc quản lý yêu cầu tra cứu. Các nút tương ứng bị vô hiệu hóa và không tạo dữ liệu giả.
 
 ## Các điểm cần thống nhất với backend
 
@@ -32,4 +33,4 @@ Khi backend sẵn sàng, cần thống nhất endpoint và cấu trúc request/r
 3. Bảng/API lưu yêu cầu tra cứu, bao gồm loại yêu cầu, khoản thu liên quan, nội dung, trạng thái và phản hồi từ ban quản lý.
 4. Cơ chế xác thực/cookie, phân quyền cư dân và cách xác định căn hộ hiện tại.
 
-Các dữ liệu hiển thị ở chế độ demo (căn hộ BM-1208, số tiền, lịch sử yêu cầu, trạng thái và phản hồi) không phải dữ liệu đọc từ SQLite/backend.
+Căn hộ mặc định là `1208` và có thể thay đổi bằng biến môi trường. Số tiền và trạng thái khoản thu được đọc từ SQLite qua backend.

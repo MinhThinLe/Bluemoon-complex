@@ -4,8 +4,12 @@ import Input from '../../../../components/ui/Input.jsx'
 import Select from '../../../../components/ui/Select.jsx'
 import Modal from '../../../../components/ui/Modal.jsx'
 import Icon from '../../../../components/ui/Icon.jsx'
+import { PageHeader, PanelHeader } from '../../../../components/ui/PageHeader.jsx'
+import Tabs from '../../../../components/ui/Tabs.jsx'
+import { Notice, StateMessage } from '../../../../components/ui/Feedback.jsx'
 import FeeIcon from '../components/FeeIcon.jsx'
-import { getResidentFees, preparePayment } from '../services/paymentService.js'
+import { getResidentFees } from '../services/paymentService.js'
+import { runtimeConfig } from '../../../../config/runtime.js'
 import { formatCurrency, formatDate } from '../../../../utils/formatters.js'
 import './payment-selection.css'
 
@@ -24,9 +28,6 @@ export default function PaymentSelectionPage({ onNavigate }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [paymentMethod, setPaymentMethod] = useState('bank')
   const [modalOpen, setModalOpen] = useState(false)
-  const [draft, setDraft] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     let isMounted = true
@@ -62,38 +63,17 @@ export default function PaymentSelectionPage({ onNavigate }) {
       : [...new Set([...current, ...visibleIds])])
   }
 
-  const handlePreparePayment = async () => {
-    setSubmitting(true)
-    setSubmitError('')
-    try {
-      const result = await preparePayment({ feeIds: selectedFees.map((fee) => fee.id), paymentMethod })
-      setDraft(result)
-    } catch (error) {
-      setSubmitError(error.message || 'Không thể tạo phiếu thanh toán.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const closeModal = () => {
-    setModalOpen(false)
-    setDraft(null)
-    setSubmitError('')
-  }
-
   const allVisibleSelected = filteredFees.filter((fee) => !fee.paid).length > 0
     && filteredFees.filter((fee) => !fee.paid).every((fee) => selectedIds.includes(fee.id))
 
   return (
     <div className="bm-page bm-payments-page">
-      <div className="bm-page-heading">
-        <div>
-          <div className="bm-eyebrow">TÀI CHÍNH CĂN HỘ</div>
-          <h1>Khoản nộp của tôi</h1>
-          <p>Theo dõi các khoản phí và chuẩn bị thanh toán cho căn hộ của bạn.</p>
-        </div>
-        <div className="bm-heading-apartment"><span><Icon name="home" size={16} /></span><div><small>CĂN HỘ ĐANG XEM</small><strong>BM-1208</strong></div><Icon name="chevron" size={15} /></div>
-      </div>
+      <PageHeader
+        eyebrow="Tài chính căn hộ"
+        title="Khoản nộp của tôi"
+        description="Theo dõi các khoản phí và chuẩn bị thanh toán cho căn hộ của bạn."
+        actions={<div className="bm-heading-apartment"><span><Icon name="home" size={16} /></span><div><small>CĂN HỘ ĐANG XEM</small><strong>BM-{runtimeConfig.residentApartmentId}</strong></div></div>}
+      />
 
       <section className="bm-payment-stats" aria-label="Tổng quan khoản nộp">
         <article className="bm-stat-card bm-stat-card--blue">
@@ -115,15 +95,14 @@ export default function PaymentSelectionPage({ onNavigate }) {
 
       <div className="bm-payment-layout">
         <section className="bm-panel bm-fee-panel">
-          <div className="bm-panel__heading">
-            <div><h2>Danh sách khoản nộp</h2><p>Chọn một hoặc nhiều khoản cần thanh toán.</p></div>
-            <span className="bm-count-pill">{fees.length} khoản</span>
-          </div>
+          <PanelHeader
+            title="Danh sách khoản nộp"
+            description="Chọn một hoặc nhiều khoản cần thanh toán."
+            actions={<span className="bm-count-pill">{fees.length} khoản</span>}
+          />
 
           <div className="bm-fee-toolbar">
-            <div className="bm-tabs" role="tablist" aria-label="Lọc khoản nộp">
-              {filters.map((item) => <button key={item.id} type="button" role="tab" aria-selected={filter === item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}
-            </div>
+            <Tabs items={filters} value={filter} onChange={setFilter} ariaLabel="Lọc khoản nộp" />
             <div className="bm-fee-search"><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm khoản nộp..." icon="search" aria-label="Tìm khoản nộp" /></div>
           </div>
 
@@ -133,9 +112,9 @@ export default function PaymentSelectionPage({ onNavigate }) {
           </div>
 
           <div className="bm-fee-list" aria-live="polite">
-            {loading ? <div className="bm-state-block"><span className="bm-loader" />Đang tải khoản nộp...</div> : null}
-            {!loading && loadError ? <div className="bm-state-block bm-state-block--error"><Icon name="alert" />{loadError}</div> : null}
-            {!loading && !loadError && filteredFees.length === 0 ? <div className="bm-state-block"><Icon name="file" />Không tìm thấy khoản nộp phù hợp.</div> : null}
+            {loading ? <StateMessage status="loading">Đang tải khoản nộp...</StateMessage> : null}
+            {!loading && loadError ? <StateMessage status="error">{loadError}</StateMessage> : null}
+            {!loading && !loadError && filteredFees.length === 0 ? <StateMessage>Không tìm thấy khoản nộp phù hợp.</StateMessage> : null}
             {!loading && !loadError && filteredFees.map((fee) => {
               const selected = selectedIds.includes(fee.id)
               return (
@@ -154,7 +133,7 @@ export default function PaymentSelectionPage({ onNavigate }) {
               )
             })}
           </div>
-          <div className="bm-fee-panel__note"><Icon name="info" size={15} /><span>Số tiền và trạng thái trong màn hình này chỉ để minh họa luồng giao diện.</span></div>
+          <div className="bm-fee-panel__note"><Icon name="info" size={15} /><span>Dữ liệu khoản thu được tải trực tiếp từ API của căn hộ đang xem.</span></div>
         </section>
 
         <aside className="bm-payment-summary">
@@ -179,8 +158,8 @@ export default function PaymentSelectionPage({ onNavigate }) {
                 ]}
               />
             </div>
-            <Button block size="large" disabled={selectedFees.length === 0 || loading} icon="card" onClick={() => { setDraft(null); setModalOpen(true) }}>Tiếp tục thanh toán</Button>
-            <div className="bm-summary-security"><Icon name="info" size={14} /><span>Đây là bước chuẩn bị phiếu. Chức năng thanh toán thật sẽ được tích hợp sau.</span></div>
+            <Button block size="large" disabled={selectedFees.length === 0 || loading} icon="receipt" onClick={() => setModalOpen(true)}>Xem phiếu thanh toán</Button>
+            <div className="bm-summary-security"><Icon name="info" size={14} /><span>Backend hiện chỉ hỗ trợ đọc khoản thu; chưa có API tạo giao dịch thanh toán.</span></div>
           </div>
           <div className="bm-payment-help"><span><Icon name="message" size={16} /></span><div><strong>Cần kiểm tra khoản thu?</strong><p>Gửi yêu cầu tra cứu cho ban quản lý.</p><button type="button" onClick={() => onNavigate?.('queries')}>Tạo yêu cầu <Icon name="arrowUpRight" size={13} /></button></div></div>
         </aside>
@@ -188,21 +167,17 @@ export default function PaymentSelectionPage({ onNavigate }) {
 
       <Modal
         isOpen={modalOpen}
-        onClose={closeModal}
-        title={draft ? 'Đã tạo phiếu thanh toán demo' : 'Xác nhận phiếu thanh toán'}
-        description={draft ? 'Phiếu được tạo ở chế độ minh họa, chưa gửi đến ngân hàng.' : 'Kiểm tra lại các khoản nộp trước khi tiếp tục.'}
-        footer={draft ? <Button onClick={closeModal}>Hoàn tất</Button> : <><Button variant="outline" onClick={closeModal}>Quay lại</Button><Button onClick={handlePreparePayment} disabled={submitting} icon="check">{submitting ? 'Đang tạo...' : 'Tạo phiếu thanh toán'}</Button></>}
+        onClose={() => setModalOpen(false)}
+        title="Phiếu thanh toán"
+        description="Kiểm tra các khoản đã chọn và phương thức dự kiến."
+        footer={<><Button variant="outline" onClick={() => setModalOpen(false)}>Đóng</Button><Button disabled title="Backend chưa có API tạo giao dịch thanh toán">Chưa thể gửi thanh toán</Button></>}
       >
-        {draft ? (
-          <div className="bm-payment-success"><span className="bm-payment-success__icon"><Icon name="checkCircle" size={28} /></span><h3>Phiếu đã sẵn sàng</h3><p>Mã phiếu minh họa: <strong>{draft.reference}</strong></p><div className="bm-payment-success__notice"><Icon name="info" size={16} /> Không chuyển tiền dựa trên phiếu này. Đây chỉ là kết quả mô phỏng giao diện.</div></div>
-        ) : (
-          <div className="bm-confirm-content">
-            <div className="bm-confirm-list">{selectedFees.map((fee) => <div key={fee.id}><span>{fee.name}<small>{fee.period}</small></span><strong>{formatCurrency(fee.amount)}</strong></div>)}</div>
-            <div className="bm-confirm-total"><span>Tổng cộng</span><strong>{formatCurrency(selectedTotal)}</strong></div>
-            <div className="bm-confirm-method"><span>Phương thức đã chọn</span><strong>{paymentMethod === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thanh toán tại quầy'}</strong></div>
-            {submitError && <p className="bm-form-error"><Icon name="alert" size={15} />{submitError}</p>}
-          </div>
-        )}
+        <div className="bm-confirm-content">
+          <div className="bm-confirm-list">{selectedFees.map((fee) => <div key={fee.id}><span>{fee.name}<small>{fee.period}</small></span><strong>{formatCurrency(fee.amount)}</strong></div>)}</div>
+          <div className="bm-confirm-total"><span>Tổng cộng</span><strong>{formatCurrency(selectedTotal)}</strong></div>
+          <div className="bm-confirm-method"><span>Phương thức đã chọn</span><strong>{paymentMethod === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thanh toán tại quầy'}</strong></div>
+          <Notice>Không có request thanh toán nào được gửi vì backend chưa định nghĩa endpoint cho thao tác này.</Notice>
+        </div>
       </Modal>
     </div>
   )

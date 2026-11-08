@@ -5,7 +5,10 @@ import Select from '../../../../components/ui/Select.jsx'
 import Table from '../../../../components/ui/Table.jsx'
 import Modal from '../../../../components/ui/Modal.jsx'
 import Icon from '../../../../components/ui/Icon.jsx'
-import { createQueryRequest, getQueryRequests } from '../services/queryRequestService.js'
+import { PageHeader, PanelHeader } from '../../../../components/ui/PageHeader.jsx'
+import Tabs from '../../../../components/ui/Tabs.jsx'
+import { Notice, StateMessage } from '../../../../components/ui/Feedback.jsx'
+import { createQueryRequest, getQueryRequests, QUERY_REQUEST_UNAVAILABLE } from '../services/queryRequestService.js'
 import { formatDate } from '../../../../utils/formatters.js'
 import './query-request.css'
 
@@ -18,10 +21,6 @@ const requestTypes = [
 
 const relatedFees = [
   { value: '', label: 'Không liên quan khoản thu' },
-  { value: 'Phí quản lý vận hành · Tháng 11/2026', label: 'Phí quản lý vận hành · Tháng 11/2026' },
-  { value: 'Phí dịch vụ tiện ích · Tháng 11/2026', label: 'Phí dịch vụ tiện ích · Tháng 11/2026' },
-  { value: 'Phí gửi xe máy · Tháng 11/2026', label: 'Phí gửi xe máy · Tháng 11/2026' },
-  { value: 'Phí quản lý vận hành · Tháng 10/2026', label: 'Phí quản lý vận hành · Tháng 10/2026' },
 ]
 
 const statusCopy = {
@@ -41,6 +40,7 @@ export default function QueryRequestPage() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [capabilityUnavailable, setCapabilityUnavailable] = useState(false)
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -55,7 +55,11 @@ export default function QueryRequestPage() {
     let isMounted = true
     getQueryRequests()
       .then((data) => { if (isMounted) setRequests(data) })
-      .catch((error) => { if (isMounted) setLoadError(error.message || 'Không thể tải lịch sử yêu cầu.') })
+      .catch((error) => {
+        if (!isMounted) return
+        if (error.code === 'API_CAPABILITY_UNAVAILABLE') setCapabilityUnavailable(true)
+        else setLoadError(error.message || 'Không thể tải lịch sử yêu cầu.')
+      })
       .finally(() => { if (isMounted) setLoading(false) })
     return () => { isMounted = false }
   }, [])
@@ -101,7 +105,7 @@ export default function QueryRequestPage() {
       setCreateOpen(false)
       setForm(initialForm)
       setFormErrors({})
-      setToast('Yêu cầu tra cứu đã được tạo ở chế độ demo.')
+      setToast('Yêu cầu tra cứu đã được gửi thành công.')
       window.setTimeout(() => setToast(''), 4200)
     } catch (error) {
       setSubmitError(error.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.')
@@ -126,17 +130,18 @@ export default function QueryRequestPage() {
 
   return (
     <div className="bm-page bm-queries-page">
-      <div className="bm-page-heading bm-query-heading">
-        <div>
-          <div className="bm-eyebrow">TRUNG TÂM HỖ TRỢ</div>
-          <h1>Yêu cầu tra cứu</h1>
-          <p>Gửi thắc mắc về khoản thu và theo dõi phản hồi từ ban quản lý.</p>
-        </div>
-        <Button icon="plus" size="large" onClick={() => { setForm(initialForm); setFormErrors({}); setSubmitError(''); setCreateOpen(true) }}>Tạo yêu cầu mới</Button>
-      </div>
+      <PageHeader
+        className="bm-query-heading"
+        eyebrow="Trung tâm hỗ trợ"
+        title="Yêu cầu tra cứu"
+        description="Gửi thắc mắc về khoản thu và theo dõi phản hồi từ ban quản lý."
+        actions={<Button icon="plus" size="large" disabled={capabilityUnavailable} onClick={() => { setForm(initialForm); setFormErrors({}); setSubmitError(''); setCreateOpen(true) }}>Tạo yêu cầu mới</Button>}
+      />
+
+      {capabilityUnavailable && <Notice className="bm-query-capability-notice">{QUERY_REQUEST_UNAVAILABLE} Màn hình được giữ để sẵn sàng tích hợp khi contract được bổ sung.</Notice>}
 
       <section className="bm-query-welcome">
-        <div className="bm-query-welcome__copy"><span className="bm-query-welcome__eyebrow">BLUEMOON SUPPORT</span><h2>Chúng tôi luôn sẵn sàng lắng nghe.</h2><p>Mô tả vấn đề bạn gặp phải. Ban quản lý sẽ tiếp nhận và phản hồi ngay trên hệ thống.</p><button type="button" onClick={() => setCreateOpen(true)}>Gửi yêu cầu tra cứu <Icon name="arrowUpRight" size={14} /></button></div>
+        <div className="bm-query-welcome__copy"><span className="bm-query-welcome__eyebrow">BLUEMOON SUPPORT</span><h2>Chúng tôi luôn sẵn sàng lắng nghe.</h2><p>Mô tả vấn đề bạn gặp phải. Ban quản lý sẽ tiếp nhận và phản hồi ngay trên hệ thống.</p><button type="button" disabled={capabilityUnavailable} onClick={() => setCreateOpen(true)}>Gửi yêu cầu tra cứu <Icon name="arrowUpRight" size={14} /></button></div>
         <div className="bm-query-illustration" aria-hidden="true"><div className="bm-query-illustration__halo" /><div className="bm-query-illustration__bubble bm-query-illustration__bubble--one"><Icon name="message" size={22} /></div><div className="bm-query-illustration__bubble bm-query-illustration__bubble--two"><Icon name="checkCircle" size={19} /></div><div className="bm-query-illustration__building"><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /></div></div>
       </section>
 
@@ -148,16 +153,20 @@ export default function QueryRequestPage() {
       </section>
 
       <section className="bm-panel bm-request-panel">
-        <div className="bm-panel__heading bm-request-panel__heading">
-          <div><h2>Lịch sử yêu cầu</h2><p>Thông tin các yêu cầu bạn đã gửi đến ban quản lý.</p></div>
-          <div className="bm-request-search"><Input value={search} onChange={(event) => setSearch(event.target.value)} icon="search" placeholder="Tìm theo mã hoặc nội dung..." aria-label="Tìm yêu cầu" /></div>
-        </div>
-        <div className="bm-request-filters" role="tablist" aria-label="Lọc trạng thái yêu cầu">
-          {[{ id: 'all', label: 'Tất cả', count: counts.total }, { id: 'waiting', label: 'Chờ tiếp nhận', count: counts.waiting }, { id: 'processing', label: 'Đang xử lý', count: counts.processing }, { id: 'resolved', label: 'Đã phản hồi', count: counts.resolved }].map((item) => (
-            <button key={item.id} type="button" role="tab" aria-selected={filter === item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}<span>{item.count}</span></button>
-          ))}
-        </div>
-        {loading ? <div className="bm-query-state"><span className="bm-loader" />Đang tải lịch sử yêu cầu...</div> : loadError ? <div className="bm-query-state bm-query-state--error"><Icon name="alert" />{loadError}</div> : (
+        <PanelHeader
+          className="bm-request-panel__heading"
+          title="Lịch sử yêu cầu"
+          description="Thông tin các yêu cầu bạn đã gửi đến ban quản lý."
+          actions={<div className="bm-request-search"><Input value={search} onChange={(event) => setSearch(event.target.value)} icon="search" placeholder="Tìm theo mã hoặc nội dung..." aria-label="Tìm yêu cầu" /></div>}
+        />
+        <Tabs
+          className="bm-request-filters"
+          ariaLabel="Lọc trạng thái yêu cầu"
+          value={filter}
+          onChange={setFilter}
+          items={[{ id: 'all', label: 'Tất cả', count: counts.total }, { id: 'waiting', label: 'Chờ tiếp nhận', count: counts.waiting }, { id: 'processing', label: 'Đang xử lý', count: counts.processing }, { id: 'resolved', label: 'Đã phản hồi', count: counts.resolved }]}
+        />
+        {loading ? <StateMessage status="loading">Đang tải lịch sử yêu cầu...</StateMessage> : loadError ? <StateMessage status="error">{loadError}</StateMessage> : (
           <Table columns={columns} data={filteredRequests} rowKey="id" emptyMessage="Không có yêu cầu nào phù hợp với bộ lọc." className="bm-request-table" />
         )}
         <div className="bm-request-panel__foot"><span>Hiển thị {filteredRequests.length} / {requests.length} yêu cầu</span><span><Icon name="info" size={13} /> Trạng thái được cập nhật bởi ban quản lý.</span></div>
@@ -181,7 +190,7 @@ export default function QueryRequestPage() {
           </div>
           <Input as="textarea" label="Nội dung cần tra cứu *" placeholder="Mô tả chi tiết vấn đề, thời gian phát sinh hoặc thông tin bạn muốn được giải đáp..." rows={5} value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} error={formErrors.description} hint="Không nhập mật khẩu hoặc thông tin thanh toán nhạy cảm vào nội dung yêu cầu." />
           {submitError && <p className="bm-form-error"><Icon name="alert" size={15} />{submitError}</p>}
-          <div className="bm-query-form__privacy"><Icon name="shield" size={15} /><span>Thông tin sẽ được gửi đến bộ phận quản lý để tiếp nhận và xử lý. Trong bản demo, yêu cầu được lưu trên trình duyệt hiện tại.</span></div>
+          <div className="bm-query-form__privacy"><Icon name="shield" size={15} /><span>Thông tin sẽ được gửi đến bộ phận quản lý để tiếp nhận và xử lý qua API khi backend hỗ trợ capability này.</span></div>
         </form>
       </Modal>
 
