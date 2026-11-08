@@ -9,7 +9,7 @@ import { getTransactionsByApartment } from '../../../transactions/services/trans
 import { getApartmentsByFloor } from '../services/paymentSelectionService.js'
 import './payment-selection.css'
 
-const FLOOR_OPTIONS = Array.from({ length: 30 }, (_, index) => ({
+const FLOOR_OPTIONS = Array.from({ length: 20 }, (_, index) => ({
   value: String(index + 1),
   label: `Tầng ${index + 1}`,
 }))
