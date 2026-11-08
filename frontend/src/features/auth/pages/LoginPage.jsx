@@ -36,7 +36,7 @@ export default function LoginPage({ onAuthenticated }) {
       <section className="bm-login-panel" aria-labelledby="login-title">
         <div className="bm-login-brand">
           <span><Icon name="moon" size={24} /></span>
-          <div><strong>bluemoon</strong><small>RESIDENT PORTAL</small></div>
+          <div><strong>bluemoon</strong><small>MANAGEMENT PORTAL</small></div>
         </div>
         <div className="bm-login-copy">
           <p className="bm-eyebrow">Xác thực tài khoản</p>

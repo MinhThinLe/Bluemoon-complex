@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { normalizeApartmentFee } from './transactionService.js'
 
-test('normalizes the backend fee response for the resident UI', () => {
+test('normalizes the backend apartment-fee response', () => {
   const fee = normalizeApartmentFee({
     id: 42,
     amount: 560000,

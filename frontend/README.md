@@ -23,16 +23,15 @@ Frontend gọi backend qua `/api`. Khi chạy Vite, request này được proxy 
 `http://127.0.0.1:3030`, nhờ đó cookie `Session-Token` hoạt động cùng origin và
 không cần bật CORS trong môi trường phát triển.
 
-Sao chép `.env.example` thành `.env.local` nếu cần đổi căn hộ đang xem:
+Sao chép `.env.example` thành `.env.local` nếu cần đổi địa chỉ API:
 
 ```env
 VITE_API_URL=/api
-VITE_RESIDENT_APARTMENT_ID=1208
 ```
 
-Các màn hình quản lý khoản thu và danh sách phí căn hộ dùng API thật. Backend
-hiện chưa có endpoint tạo giao dịch thanh toán hoặc yêu cầu tra cứu; giao diện
-sẽ vô hiệu hóa các thao tác này thay vì tạo dữ liệu giả.
+Phạm vi Sprint 1 gồm màn hình quản lý khoản thu nội bộ và sử dụng API thật.
+Các luồng dành cho cư dân, thanh toán và yêu cầu tra cứu chưa được đưa vào bản
+build này.
 
 Các lệnh kiểm tra trước khi tạo Pull Request:
 

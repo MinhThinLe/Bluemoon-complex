@@ -8,10 +8,8 @@ Feature code is grouped by business workflow. Shared UI primitives belong in
 - `fees/management`: create, update, and delete fee UI.
 - `transactions/services`: transaction retrieval API integration.
 
-## Hoang Minh Tuan
-
-- `fees/payment-selection`: fee selection and payment preparation UI.
-- `transactions/query-request`: transaction query request UI.
+Resident payment and query-request workflows are outside Sprint 1 and are not
+included in the current build.
 
 Each UI feature keeps page-level components in `pages`, reusable local
 components in `components`, and feature-specific API calls in `services`.

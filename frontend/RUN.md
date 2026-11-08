@@ -42,26 +42,23 @@ http://localhost:5173
 
 Vite tự chuyển tiếp các request `/api` đến backend ở cổng `3030`.
 
-## 4. Cấu hình căn hộ
+## 4. Cấu hình API
 
-Mặc định frontend tải dữ liệu căn hộ `1208`. Muốn đổi căn hộ, tạo
+Mặc định frontend gọi `/api` qua Vite proxy. Nếu cần đổi địa chỉ, tạo
 `frontend/.env.local`:
 
 ```env
 VITE_API_URL=/api
-VITE_RESIDENT_APARTMENT_ID=1208
 ```
 
 Khởi động lại `npm run dev` sau khi thay đổi file môi trường.
 
-## 5. Các đường dẫn chính
+## 5. Chức năng Sprint 1
 
-- `/`: danh sách khoản thu của căn hộ.
-- `/queries`: yêu cầu tra cứu.
-- `/admin/fees`: quản lý khoản thu.
+- `/` và `/admin/fees`: quản lý khoản thu nội bộ.
 
-Tài khoản phải có quyền phù hợp với API. Backend hiện chưa có API thanh toán và
-yêu cầu tra cứu nên các thao tác tương ứng được vô hiệu hóa trên giao diện.
+Tài khoản phải có quyền Admin theo contract API hiện tại. Các luồng cư dân,
+thanh toán và yêu cầu tra cứu thuộc Sprint 2/3 nên không có trong bản build.
 
 ## 6. Kiểm tra trước khi push
 
@@ -76,4 +73,4 @@ npm run build
 - **Không kết nối được máy chủ:** kiểm tra backend đang chạy ở cổng `3030`.
 - **401:** đăng nhập lại bằng tài khoản trong cấu hình backend.
 - **403:** tài khoản không đủ quyền gọi endpoint.
-- **Không có dữ liệu:** kiểm tra `VITE_RESIDENT_APARTMENT_ID` và dữ liệu SQLite.
+- **Không có dữ liệu:** kiểm tra dữ liệu SQLite và cấu hình backend.
