@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::convert::Infallible;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use base64::Engine;
@@ -14,17 +13,12 @@ use tokio::sync::RwLock;
 use warp::reject::Reject;
 use warp::reply::{Reply, Response, html, with_header, with_status};
 
+use bluemoon_database::PrivilegeLevel;
+
 use crate::server::Server;
 
 #[derive(Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
-
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub enum PrivilegeLevel {
-    Resident,
-    Accountant,
-    Admin,
-}
 
 pub struct Credential {
     username: String,
@@ -55,18 +49,6 @@ impl AuthenticatedUsers {
 
     pub async fn authenticated_as(&self, token: AuthenticationToken) -> Option<PrivilegeLevel> {
         self.tokens.read().await.get(&token).copied()
-    }
-}
-
-impl FromStr for PrivilegeLevel {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s.to_lowercase().as_str() {
-            "resident" => Self::Resident,
-            "accountant" => Self::Accountant,
-            "admin" => Self::Admin,
-            _other => return Err(()),
-        })
     }
 }
 

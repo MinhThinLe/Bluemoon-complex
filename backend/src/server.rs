@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use std::convert::Infallible;
 use std::future::ready;
 
 use http::StatusCode;
 
 use serde_json::Value;
+
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
@@ -12,12 +12,15 @@ use warp::reject::Rejection;
 use warp::reply::{Reply, html, with_header, with_status};
 use warp::{Filter, path};
 
+use bluemoon_database::{
+    Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
+    PrivilegeLevel,
+};
+
 use crate::authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, UnderAuthenticated,
 };
 use crate::config::ServerConfig;
-use crate::database::{Database, DatabaseError};
-use crate::handles::{FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId};
 
 const API_ROOT_URL: &str = "api";
 
@@ -71,7 +74,7 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee-type"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: HashMap<String, String>| FeeType::try_from(json)))
+            .and(warp::body::json().map(|json: Value| FeeType::try_from(&json)))
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee_type, server: Server, privilege_level| {
