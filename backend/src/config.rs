@@ -1,21 +1,21 @@
+use std::net::SocketAddr;
+use std::ops::Deref;
 use std::path::PathBuf;
 use std::process::exit;
-use std::{net::SocketAddr, ops::Deref};
 
 use log::{error, info, warn};
+
 use tokio::fs;
+
 use toml::Table;
 
-use crate::database::User;
+use bluemoon_database::{DatabaseConfig, PrivilegeLevel, User};
+
 use crate::logger::Logger;
 
 #[derive(Clone, Debug)]
 pub struct ServerConfig {
     pub listen_address: SocketAddr,
-}
-
-pub struct DatabaseConfig {
-    pub path: PathBuf,
 }
 
 pub struct Users(Vec<User>);
@@ -44,28 +44,9 @@ impl TryFrom<&Table> for Configuration {
 
         Ok(Self {
             server_config: server_table.try_into()?,
-            database_config: database_table.try_into()?,
+            database_config: parse_db_config(database_table)?,
             default_users: user_table.try_into()?,
         })
-    }
-}
-
-impl TryFrom<&Table> for DatabaseConfig {
-    type Error = String;
-    fn try_from(value: &Table) -> Result<Self, Self::Error> {
-        let path =
-            get_string(value, "path").map_err(|reason| format!("`database.path` {reason}"))?;
-
-        let path = PathBuf::from(path);
-        match path.try_exists() {
-            Ok(true) => (),
-            Ok(false) => {
-                warn!("`database.path` does not exist on the filesystem, creating a new database");
-            }
-            Err(err) => Err(format!("Unable to read from the filesystem due to {err}"))?,
-        }
-
-        Ok(Self { path })
     }
 }
 
@@ -95,7 +76,7 @@ impl TryFrom<&Table> for Users {
                         username: key.clone(),
                         hashed_password: str.to_string(),
                         salt: String::new(),
-                        role: crate::authentication::PrivilegeLevel::Admin,
+                        role: PrivilegeLevel::Admin,
                     })
                 })
                 .collect(),
@@ -148,6 +129,21 @@ impl Configuration {
     }
 }
 
+fn parse_db_config(table: &Table) -> Result<DatabaseConfig, String> {
+    let path = get_string(table, "path").map_err(|reason| format!("`database.path` {reason}"))?;
+
+    let path = PathBuf::from(path);
+    match path.try_exists() {
+        Ok(true) => (),
+        Ok(false) => {
+            warn!("`database.path` does not exist on the filesystem, creating a new database");
+        }
+        Err(err) => Err(format!("Unable to read from the filesystem due to {err}"))?,
+    }
+
+    Ok(DatabaseConfig::new(path))
+}
+
 fn get_config_path() -> PathBuf {
     const CONFIG_FILE_LOCATION: &str = "--config-file";
     let commandline_args: Vec<String> = std::env::args().collect();
@@ -177,25 +173,6 @@ mod test {
     use std::net::{Ipv4Addr, SocketAddrV4};
 
     use super::*;
-
-    #[test]
-    fn test_database_config_parsing() {
-        const DATABASE_CONFIG_1: &str = r#"
-            path = "/path/here"
-        "#;
-        const DATABASE_CONFIG_2: &str = r#"
-        "#;
-
-        let table = DATABASE_CONFIG_1.parse::<Table>().unwrap();
-        let config = DatabaseConfig::try_from(&table).unwrap();
-
-        assert_eq!(config.path, PathBuf::from("/path/here"));
-
-        let table = DATABASE_CONFIG_2.parse::<Table>().unwrap();
-        let config = DatabaseConfig::try_from(&table);
-
-        assert!(config.is_err());
-    }
 
     #[test]
     fn test_server_config_parsing() {

@@ -14,7 +14,7 @@ Theo yêu cầu của đề bài, phiên bản 1.0 cần quản lý các thông 
 | hashed_password | text         | not null                                    |
 | salt            | text         | not null                                    |
 | display_name    | text         | not null                                    |
-| role            | integer      | not null, foreign key -> [Roles.id](#Roles) |
+| role_id         | integer      | not null, foreign key -> [Roles.id](#Roles) |
 | belongs_to      | integer      | foreign key -> [Residents.id](#Residents)   |
 
 **Lưu ý**: `belongs_to` có thể null trong trường hợp chủ tài khoản thuộc về
@@ -29,17 +29,17 @@ nhân viên/ban quản lý và người này không cư trú tại chung cư nà
 
 # Residents
 
-| Tên cột         | Kiểu dữ liệu | Ràng buộc                                   |
-| --------------- | ------------ | ------------------------------------------- |
-| id              | integer      | primary key                                 |
-| name            | text         | not null                                    |
-| gender          | integer      | not null                                    |
-| date_of_birth   | integer      | not null                                    |
-| move_in         | integer      | not null                                    |
-| move_out        | integer      |                                             |
-| spouse_of       | integer      | key -> [Self.id](#Residents)                |
-| child_of        | integer      | key -> [Self.id](#Residents)                |
-| apartment       | integer      | foreign key -> [Apartments.id](#Apartments) |
+| Tên cột         | Kiểu dữ liệu | Ràng buộc                                             |
+| --------------- | ------------ | ----------------------------------------------------- |
+| id              | integer      | primary key                                           |
+| name            | text         | not null                                              |
+| gender          | integer      | not null                                              |
+| date_of_birth   | integer      | not null                                              |
+| move_in         | integer      | not null                                              |
+| move_out        | integer      |                                                       |
+| spouse_of       | integer      | key -> [Self.id](#Residents)                          |
+| child_of        | integer      | key -> [Self.id](#Residents)                          |
+| apartment_id    | integer      | not null, foreign key -> [Apartments.id](#Apartments) |
 
 **Lưu ý**: Residents và Users phải tách thành 2 bảng vì không phải cư dân nào
 cũng có nhu cầu sở hữu tài khoản (người già/trẻ em). Theo mô hình hiện tại thì
@@ -47,11 +47,11 @@ cư dân nào có nhu cầu lập tài khoản thì sẽ làm việc với ban q
 
 # Apartments
 
-| Tên cột | Kiểu dữ liệu | Ràng buộc                                           |
-| ------- | ------------ | --------------------------------------------------- |
-| id      | integer      | primary key                                         | 
-| area    | real         | > 0                                                 |
-| type    | integer      | foreign key -> [ApartmentTypes.id](#ApartmentTypes) |
+| Tên cột | Kiểu dữ liệu | Ràng buộc                                                     |
+| ------- | ------------ | ------------------------------------------------------------- |
+| id      | integer      | primary key                                                   | 
+| area    | real         | > 0                                                           |
+| type    | integer      | not null, foreign key -> [ApartmentTypes.id](#ApartmentTypes) |
 
 
 **Lưu ý**: 
@@ -66,18 +66,22 @@ cư dân nào có nhu cầu lập tài khoản thì sẽ làm việc với ban q
 | -------------- | ------------ | ----------- |
 | id             | integer      | primary key |
 | name           | text         | not null    |
-| management_fee | real         | not null    |
+| service_rate   | integer      | not null    |
 
 **Lưu ý**: Phí quản lý là cố định 7.000 vnđ/m² nên không cần phải lưu giá tri này
 
 # Fees
 
-| Tên cột   | Kiểu dữ liệu | Ràng buộc                                   |
-| --------- | ------------ | ------------------------------------------- |
-| id        | integer      | primary key                                 |
-| amount    | real         | > 0                                         |
-| paid      | boolean      | not null                                    |
-| apartment | integer      | foreign key -> [Apartments.id](#Apartments) |
+| Tên cột    | Kiểu dữ liệu | Ràng buộc                                             |
+| ---------  | ------------ | ----------------------------------------------------- |
+| id         | integer      | primary key                                           |
+| amount     | real         | > 0                                                   |
+| paid       | boolean      | not null                                              |
+| optional   | boolean      | not null                                              |
+| created_at | integer      | not null                                              |
+| due_on     | integer      |                                                       |
+| type_id    | integer      | not null, foreign key -> [FeeTypes.id](#FeeTypes)     |
+| apartment  | integer      | not null, foreign key -> [Apartments.id](#Apartments) |
 
 # FeeTypes
 
