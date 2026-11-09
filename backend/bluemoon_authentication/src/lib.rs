@@ -8,7 +8,6 @@ use std::sync::Arc;
 
 use base64::Engine;
 
-use bluemoon_database::Database;
 use http::StatusCode;
 
 use sha2::{Digest, Sha256};
@@ -17,6 +16,8 @@ use tokio::sync::RwLock;
 
 use warp::reject::Reject;
 use warp::reply::{Reply, Response, html, with_header, with_status};
+
+use bluemoon_database::Database;
 
 #[derive(Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
@@ -61,6 +62,7 @@ impl FromStr for PrivilegeLevel {
 }
 
 impl AuthenticatedUsers {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             tokens: Arc::new(RwLock::new(HashMap::new())),
@@ -79,6 +81,16 @@ impl AuthenticationToken {
 }
 
 impl AuthenticatedUsers {
+    /// Processes authentication, hands the client a `Session-Token` cookie if the supplied
+    /// credentials is valid. Rejects the authentication request otherwise.
+    ///
+    /// # Errors
+    ///
+    /// Infallible
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the database contains garbage data
     pub async fn process_authentication_handle(
         self,
         request: String,
@@ -102,9 +114,8 @@ impl AuthenticatedUsers {
         }
 
         let token = AuthenticationToken::new(&hashed_password);
-        let role = match PrivilegeLevel::from_str(&user.role) {
-            Ok(role) => role,
-            Err(_) => panic!("Unknown role {}", user.role),
+        let Ok(role) = PrivilegeLevel::from_str(&user.role) else {
+            panic!("Unknown role {}", user.role);
         };
         self.tokens.write().await.insert(token, role);
 

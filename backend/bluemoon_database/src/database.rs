@@ -89,7 +89,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn get_user(&self, username: &str) -> Option<User> {
         const QUERY: &str = "
             select
@@ -122,7 +125,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn add_fee_type(&self, fee_type: FeeType) -> Result<(), DatabaseError> {
         const QUERY: &str = "insert into FeeTypes (name) values (?)";
 
@@ -137,7 +143,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, DatabaseError> {
         const QUERY: &str = "select id, name from FeeTypes;";
 
@@ -159,7 +168,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn get_all_apartment_id(&self) -> Result<Vec<ApartmentId>, DatabaseError> {
         const QUERY: &str = "select id from Apartments;";
 
@@ -285,7 +297,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn get_apartments(&self, floor: i32) -> Result<Vec<Apartment>, DatabaseError> {
         const QUERY: &str = "
             select
@@ -320,7 +335,10 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any underlying calls to sqlite fails
-    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "Should only panic with invalid SQL"
+    )]
     pub async fn get_apartment_fees(
         &self,
         apartment_id: ApartmentId,
