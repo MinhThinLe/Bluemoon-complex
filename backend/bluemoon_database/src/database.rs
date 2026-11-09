@@ -33,6 +33,11 @@ const INIT_TABLES: &str = include_str!("../sql/init_tables.sql");
 const INIT_ROLES: &str = include_str!("../sql/init_roles.sql");
 
 impl Database {
+    /// Creates a new database given a config
+    ///
+    /// # Errors
+    ///
+    /// Returns a human-readable string containing the reason why the database failed to start
     pub fn new(config: &DatabaseConfig) -> Result<Self, String> {
         let connection = match Connection::open(&config.path) {
             Ok(connection) => connection,
@@ -46,9 +51,16 @@ impl Database {
         })
     }
 
+    /// Add an admin user to the database
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the database contains garbage data
     pub async fn add_admin_users(&self, users: &[User]) {
         const INSERT_QUERY: &str = "
-            INSERT OR IGNORE INTO Users (username, display_name, hashed_password, salt, role_id) values (?, ?, ?, ?, ?);
+                insert or ignore into Users
+                (username, display_name, hashed_password, salt, role_id) values
+                (?       , ?           , ?              , ?   , ?      );
             ";
 
         let database = self.connection.lock().await;
@@ -72,8 +84,23 @@ impl Database {
         }
     }
 
+    /// Fetch a user, given their username from the database
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn get_user(&self, username: &str) -> Option<User> {
-        const QUERY: &str = "select username, hashed_password, salt, Roles.name from Users join Roles on Roles.id = Users.role_id where username = (?);";
+        const QUERY: &str = "
+            select
+                username,
+                hashed_password,
+                salt,
+                Roles.name
+            from Users
+            join Roles on Roles.id = Users.role_id
+            where username = (?);
+        ";
 
         let database = self.connection.lock().await;
 
@@ -90,6 +117,12 @@ impl Database {
             .ok()
     }
 
+    /// Add a fee type record into the database
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn add_fee_type(&self, fee_type: FeeType) -> Result<(), DatabaseError> {
         const QUERY: &str = "insert into FeeTypes (name) values (?)";
 
@@ -99,6 +132,12 @@ impl Database {
             .map(|_| ())?)
     }
 
+    /// Get every fee types id stored in the database
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn get_all_fee_types(&self) -> Result<Vec<FeeType>, DatabaseError> {
         const QUERY: &str = "select id, name from FeeTypes;";
 
@@ -115,6 +154,12 @@ impl Database {
             .collect()
     }
 
+    /// Get every apartments' ID
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn get_all_apartment_id(&self) -> Result<Vec<ApartmentId>, DatabaseError> {
         const QUERY: &str = "select id from Apartments;";
 
@@ -126,6 +171,15 @@ impl Database {
             .collect()
     }
 
+    /// Add fee records to the database
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    ///
+    /// # Panics
+    ///
+    /// Will cause a panic if all writes succeed but committing them fail
     pub async fn add_fee(
         &self,
         fee: FeeAdditionRequest,
@@ -162,6 +216,11 @@ impl Database {
         Ok(())
     }
 
+    /// Delete fee entries from the database
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
     pub async fn delete_fees(&self, fee_type: FeeTypeId) -> Result<(), DatabaseError> {
         const QUERY: &str = "delete from Fees where type_id = (?);";
 
@@ -169,6 +228,17 @@ impl Database {
         Ok(database.execute(QUERY, params![fee_type]).map(|_| ())?)
     }
 
+    /// Modify a fee record in the database if and only if its new value is set to `Option::Some`,
+    /// returning the number of fields modified, which differs from the number of rows modified in
+    /// that modifying the same row twice counts as modifying 2 fields
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    ///
+    /// # Panics
+    ///
+    /// Will panic if all writes succeeded but committing them fail
     pub async fn modify_fee(
         &self,
         request: FeeModificationRequest,
@@ -210,8 +280,14 @@ impl Database {
         Ok(modified)
     }
 
+    /// Get every aparment on a specified floor
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any of the underlying SQLite calls fail
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn get_apartments(&self, floor: i32) -> Result<Vec<Apartment>, DatabaseError> {
-        const QUERY: &str = r#"
+        const QUERY: &str = "
             select
                 Apartments.id,
                 area,
@@ -219,7 +295,7 @@ impl Database {
             from Apartments
             join ApartmentTypes on Apartments.type_id = ApartmentTypes.id
             where Apartments.id between ? and ?;
-        "#;
+        ";
 
         let lower_bound = floor * 100;
         let upper_bound = (floor + 1) * 100;
@@ -239,11 +315,17 @@ impl Database {
             .collect()
     }
 
+    /// Get ever fee records of an apartment given its ID
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if any underlying calls to sqlite fails
+    #[allow(clippy::missing_panics_doc, reason = "Should only panic with invalid SQL")]
     pub async fn get_apartment_fees(
         &self,
         apartment_id: ApartmentId,
     ) -> Result<Vec<Fee>, DatabaseError> {
-        const QUERY: &str = r#"
+        const QUERY: &str = "
             select
                 amount,
                 paid,
@@ -254,7 +336,7 @@ impl Database {
             from Fees
             join FeeTypes on FeeTypes.id = Fees.type_id
             where apartment_id = ?;
-        "#;
+        ";
 
         let database = self.connection.lock().await;
         let mut statement = database.prepare(QUERY).expect("Invalid SQL");

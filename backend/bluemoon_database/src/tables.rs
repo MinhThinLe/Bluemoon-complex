@@ -130,12 +130,14 @@ impl TryFrom<Value> for FeeAdditionRequest {
 }
 
 impl DatabaseConfig {
+    #[must_use]
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }
 }
 
 impl FeeAdditionError {
+    #[must_use]
     pub fn rejection_message(self) -> String {
         let message = match self {
             Self::Amount => "amount",
