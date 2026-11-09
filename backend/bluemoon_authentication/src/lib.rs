@@ -1,3 +1,6 @@
+#![deny(clippy::pedantic, clippy::complexity, clippy::perf)]
+#![allow(clippy::cast_possible_truncation)]
+
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::str::FromStr;
