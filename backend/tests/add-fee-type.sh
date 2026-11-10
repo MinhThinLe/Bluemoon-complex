@@ -7,8 +7,9 @@ fi
 
 cookie=$(echo $session_token | sed "s/set-cookie: //" | tr -d '[:space:]')
 
-curl localhost:3030/api/new/fee-type \
-    --cookie "Session-Token=XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=" \
+curl -f localhost:3030/api/new/fee-type \
+    --cookie "$cookie" \
     -H "Content-Type: application/json" \
     -d '{ "name": "new-fee-type" }'
 
+exit $?

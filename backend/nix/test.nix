@@ -30,6 +30,7 @@
 
         output = node1.succeed("${../tests/sign-in.sh}")
         output = node1.succeed("${../tests/add-fee-type.sh}")
-        output = node1.succeed("${../tests/add-fee-type.sh}")
+        # Adding the same fee type-twice should fail
+        output = node1.fail("${../tests/add-fee-type.sh}")
     '';
 }
