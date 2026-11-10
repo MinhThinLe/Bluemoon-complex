@@ -12,7 +12,7 @@ pub type UnixTime = i64;
 pub struct FeeType {
     #[serde(skip_deserializing)]
     pub id: FeeTypeId,
-    pub(crate) name: String,
+    pub name: String,
 }
 
 #[derive(Debug)]

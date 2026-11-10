@@ -21,11 +21,22 @@ impl Server {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
         }
+
+        if self
+            .database
+            .get_all_fee_types()
+            .await?
+            .iter()
+            .any(|item| item.name == fee_type.name)
+        {
+            return Ok(with_status("Duplicate fee type", StatusCode::BAD_REQUEST));
+        }
+
         Ok(self
             .database
             .add_fee_type(fee_type)
             .await
-            .map(|()| with_status("Add fee type ok".to_string(), StatusCode::OK))?)
+            .map(|()| with_status("Add fee type ok", StatusCode::OK))?)
     }
 
     pub async fn get_fee_types_handle(
