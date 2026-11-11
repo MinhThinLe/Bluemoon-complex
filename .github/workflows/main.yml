@@ -15,5 +15,12 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@v3
       - name: Build default package
         run: nix build ./backend
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: bluemoon-backend
+          path: result/bin/backend
+        
       - name: Run tests
         run: nix flake check -L ./backend
