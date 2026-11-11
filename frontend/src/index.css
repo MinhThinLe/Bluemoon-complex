@@ -1,53 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Space+Grotesk:wght@600;700&display=swap');
 
 :root {
-  font-family: 'Be Vietnam Pro', Inter, 'Segoe UI', sans-serif;
-  color: #17263d;
-  background: #f5f8fd;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  color-scheme: dark;
+  color: #d8dbe8;
+  background: #0b0b1a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-optical-sizing: auto;
-  font-weight: 400;
-
-  --bm-blue: #2864dc;
-  --bm-blue-dark: #1748ad;
-  --bm-blue-soft: #edf4ff;
-  --bm-ink: #17263d;
-  --bm-muted: #77849a;
-  --bm-border: #e7edf5;
-  --bm-surface: #ffffff;
-  --bm-background: #f5f8fd;
-  --bm-green: #16845b;
-  --bm-danger: #b54747;
-  --bm-warning: #b77d32;
-  --bm-radius-sm: 8px;
-  --bm-radius-md: 12px;
-  --bm-radius-lg: 15px;
-  --bm-shadow: 0 12px 32px rgba(30, 57, 99, 0.06);
-  --bm-shadow-soft: 0 7px 22px rgba(30, 57, 99, 0.035);
+  --bm-blue: #00e5ff;
+  --bm-blue-dark: #68edff;
+  --bm-blue-soft: rgba(0, 229, 255, .08);
+  --bm-ink: #f5f6fa;
+  --bm-text: #d8dbe8;
+  --bm-muted: #b4b8d0;
+  --bm-border: #26263f;
+  --bm-control-border: #606080;
+  --bm-surface: #16162b;
+  --bm-input: #121221;
+  --bm-background: #0b0b1a;
+  --bm-green: #65d99b;
+  --bm-danger: #ff709e;
+  --bm-warning: #ffb020;
+  --bm-radius-sm: 4px;
+  --bm-radius-md: 8px;
+  --bm-radius-lg: 10px;
+  --bm-heading-font: 'Space Grotesk', 'Be Vietnam Pro', sans-serif;
 }
-
 * { box-sizing: border-box; }
-
-html { min-width: 320px; min-height: 100%; }
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: var(--bm-background);
-}
-
+html, body, #root { margin: 0; min-width: 320px; min-height: 100%; }
+body { min-height: 100vh; font-size: 14px; line-height: 1.5; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
-button:disabled { cursor: not-allowed; }
+button:disabled, input:disabled, select:disabled { cursor: not-allowed; }
 a { color: inherit; }
-
-::selection { background: #d9e7ff; color: #153d91; }
-
-:focus-visible {
-  outline: 3px solid rgba(40, 100, 220, 0.28);
-  outline-offset: 2px;
-}
+button, input, select { -webkit-tap-highlight-color: transparent; }
+input[type=checkbox] { width: 18px; height: 18px; margin: 0; accent-color: var(--bm-blue); vertical-align: middle; }
+input[type=number], input[type=date] { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--bm-blue); outline-offset: 3px; }
+::selection { color: #0b0b1a; background: var(--bm-blue); }
+[hidden] { display: none !important; }
+.bm-money { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bm-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

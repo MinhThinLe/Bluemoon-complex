@@ -32,6 +32,9 @@ const iconShapes = {
 }
 
 export default function Icon({ name, size = 20, strokeWidth = 1.8, className = '' }) {
+  if (['moon', 'shield', 'eye-off', 'user', 'refresh', 'create', 'delete', 'arrow-right', 'arrow-left'].includes(name)) {
+    return <img src={`/figma/${name}.svg`} width={size} height={size} className={className} alt="" aria-hidden="true" />
+  }
   return (
     <svg
       className={className}

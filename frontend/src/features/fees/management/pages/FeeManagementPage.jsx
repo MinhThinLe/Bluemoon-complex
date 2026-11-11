@@ -40,6 +40,7 @@ export default function FeeManagementPage() {
   const addRecord = (record) => setRecords((current) => [{ id: crypto.randomUUID(), time: new Date().toLocaleTimeString('vi-VN'), ...record }, ...current])
 
   const submit = async (payload) => {
+    if (busy) return false
     setBusy(true); setNotice(null)
     try {
       const feeType = feeTypes.find((item) => String(item.id) === String(payload.feeTypeId))
@@ -64,6 +65,7 @@ export default function FeeManagementPage() {
   }
 
   const confirmDelete = async () => {
+    if (busy || !deleteTarget) return
     setBusy(true); setNotice(null)
     try {
       await deleteFeesByType(deleteTarget.id)
@@ -76,11 +78,11 @@ export default function FeeManagementPage() {
 
   const typeOptions = [{ value: '', label: typesLoading ? 'Đang tải...' : 'Chọn loại khoản thu' }, ...feeTypes.map((type) => ({ value: String(type.id), label: type.name }))]
   return <main className="fee-admin-page">
-    <PageHeader className="fee-admin-header" eyebrow="Ban quản lý / Tài chính" title="Quản lý khoản thu" description="Tạo khoản thu hàng loạt, cập nhật từng căn hộ hoặc xóa theo loại khoản thu." actions={<Button variant="outline" onClick={loadTypes} disabled={typesLoading}>Làm mới loại phí</Button>} />
+    <PageHeader className="fee-admin-header" eyebrow="Hệ thống quản lý căn hộ / Quản lý thu phí" title="Quản lý khoản thu" description="Tạo khoản thu, cập nhật từng căn hộ hoặc xóa theo loại." actions={<Button variant="outline" icon="refresh" onClick={loadTypes} disabled={typesLoading || busy}>Làm mới loại phí</Button>} />
     {notice && <Notice className="fee-admin-notice" variant={notice.kind}>{notice.text}</Notice>}
     <div className="fee-admin-grid">
-      <section className="bm-panel fee-admin-card"><Tabs className="fee-admin-tabs" ariaLabel="Thao tác khoản thu" value={mode} onChange={setMode} items={[{ id: 'create', label: 'Tạo khoản thu' }, { id: 'edit', label: 'Sửa khoản thu' }]} /><div className="fee-admin-card__body"><FeeForm key={mode} mode={mode} feeTypes={feeTypes} busy={busy || typesLoading} onSubmit={submit} /></div></section>
-      <aside className="bm-panel fee-admin-card fee-admin-delete-card"><PanelHeader className="fee-admin-card__heading" eyebrow="Vùng nguy hiểm" title="Xóa khoản thu" /><p>API hiện tại xóa tất cả khoản thu có cùng loại, trên toàn bộ căn hộ.</p><Select options={typeOptions} value={deleteTypeId} onChange={(event) => setDeleteTypeId(event.target.value)} /><Button variant="danger" block onClick={requestDelete} disabled={busy || typesLoading}>Xóa theo loại</Button></aside>
+      <section className="bm-panel fee-admin-card"><Tabs className="fee-admin-tabs" ariaLabel="Thao tác khoản thu" value={mode} disabled={busy} onChange={(value) => { setMode(value); setNotice(null) }} items={[{ id: 'create', label: 'Tạo khoản thu' }, { id: 'edit', label: 'Sửa khoản thu' }]} /><div className="fee-admin-card__body"><FeeForm key={mode} mode={mode} feeTypes={feeTypes} busy={busy || typesLoading} onSubmit={submit} /></div></section>
+      <aside className="bm-panel fee-admin-card fee-admin-delete-card"><PanelHeader className="fee-admin-card__heading" title="Xóa theo loại" /><Select label="Loại khoản thu cần xóa" options={typeOptions} value={deleteTypeId} disabled={busy || typesLoading} onChange={(event) => setDeleteTypeId(event.target.value)} /><Notice>Xóa tất cả khoản thu thuộc loại đã chọn trên toàn bộ căn hộ trong hệ thống.</Notice><Button variant="danger" icon="delete" block onClick={requestDelete} disabled={busy || typesLoading || !deleteTypeId}>Xóa theo loại</Button><small>Dữ liệu đã xóa không thể khôi phục từ giao diện.</small></aside>
     </div>
     <FeeTable records={records} />
     <DeleteFeeDialog feeType={deleteTarget} busy={busy} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
