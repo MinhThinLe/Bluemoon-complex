@@ -16,11 +16,11 @@ jobs:
     - name: Build
       run: |
         cd backend
-        cargo build --release --verbose
+        cargo build --release
     - name: Run tests
       run: |
         cd backend
-        cargo test --release --verbose        
+        cargo test --release       
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
