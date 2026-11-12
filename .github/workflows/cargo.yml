@@ -13,14 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+
+    - name: Lint
+      run: |
+        cd backend
+        cargo clippy --all
+
+    - name: Run tests
+      run: |
+        cd backend
+        cargo test --all
+
     - name: Build
       run: |
         cd backend
         cargo build --release
-    - name: Run tests
-      run: |
-        cd backend
-        cargo test --release       
+
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
