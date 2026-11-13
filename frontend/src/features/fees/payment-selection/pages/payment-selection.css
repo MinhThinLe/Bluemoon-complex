@@ -1,6 +1,5 @@
 .fee-selection-notice { margin-bottom: 24px; }
 .fee-selection-filter, .fee-selection-list { margin-bottom: 24px; padding: 24px; }
-.fee-selection-filter__fields { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr); gap: 16px; margin-top: 24px; }
 .fee-selection-list__heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .fee-selection-count { padding: 3px 8px; border-radius: 4px; color: var(--bm-muted); background: #ffffff08; font-size: 12px; white-space: nowrap; }
 .fee-selection-name { display: flex; min-width: 180px; flex-direction: column; gap: 4px; }
@@ -16,7 +15,6 @@
 .fee-selection-summary > .bm-button { margin-left: auto; }
 @media (max-width: 760px) {
   .fee-selection-filter, .fee-selection-list { padding: 20px 16px; }
-  .fee-selection-filter__fields { grid-template-columns: 1fr; }
   .fee-selection-summary { flex-wrap: wrap; }
   .fee-selection-summary > .bm-button { flex-basis: 100%; white-space: normal; margin-left: 0; }
 }

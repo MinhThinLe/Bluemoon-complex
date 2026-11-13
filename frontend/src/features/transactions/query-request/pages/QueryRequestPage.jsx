@@ -1,16 +1,14 @@
 import { useState } from 'react'
+import ApartmentPicker from '../../../../components/apartment/ApartmentPicker.jsx'
 import Button from '../../../../components/ui/Button.jsx'
 import DataState from '../../../../components/ui/DataState.jsx'
 import Icon from '../../../../components/ui/Icon.jsx'
 import { PageHeader, PanelHeader } from '../../../../components/ui/PageHeader.jsx'
-import Select from '../../../../components/ui/Select.jsx'
 import Table from '../../../../components/ui/Table.jsx'
 import Tabs from '../../../../components/ui/Tabs.jsx'
 import useApartmentFees from '../../../../hooks/useApartmentFees.js'
 import { formatCurrency, formatDate } from '../../../../utils/formatters.js'
 import './query-request.css'
-
-const FLOOR_OPTIONS = Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: `Tầng ${i + 1}` }))
 
 export default function QueryRequestPage({ initialApartmentId = null, initialSelectedFeeIds = [], onBackToSelection }) {
   const { floor, apartmentId, apartments, fees, loadingApartments, loadingFees, error, chooseFloor, chooseApartment, retry } = useApartmentFees({ initialApartmentId })
@@ -44,15 +42,10 @@ export default function QueryRequestPage({ initialApartmentId = null, initialSel
       description="Theo dõi trạng thái các khoản thu của từng căn hộ."
       actions={onBackToSelection && <Button variant="outline" icon="arrow-left" onClick={onBackToSelection}>Quay lại chọn khoản</Button>} />
     <section className="bm-panel query-request-filter">
-      <PanelHeader title="Thông tin căn hộ" />
-      <div className="query-request-filter__fields">
-        <Select label="Tầng" value={floor} options={FLOOR_OPTIONS} disabled={loadingApartments}
-          onChange={(event) => { chooseFloor(event.target.value); setActiveFilter('pending') }} />
-        <Select label="Căn hộ" value={apartmentId} disabled={loadingApartments || !apartments.length}
-          onChange={(event) => { chooseApartment(event.target.value); setActiveFilter('pending') }}
-          options={[{ value: '', label: loadingApartments ? 'Đang tải căn hộ...' : apartments.length ? 'Chọn căn hộ' : 'Tầng này chưa có dữ liệu căn hộ' },
-            ...apartments.map((a) => ({ value: String(a.id), label: `Căn ${a.id} · ${a.area} m² · ${a.typeName}` }))]} />
-      </div>
+      <PanelHeader title="Thông tin căn hộ" description="Chọn tầng và căn hộ để xem các khoản thu." />
+      <ApartmentPicker floor={floor} apartmentId={apartmentId} apartments={apartments} loading={loadingApartments}
+        onFloorChange={(value) => { chooseFloor(value); setActiveFilter('pending') }}
+        onApartmentChange={(value) => { chooseApartment(value); setActiveFilter('pending') }} />
     </section>
     {ready && <section className="query-request-stats" aria-label="Tổng hợp khoản thu">
       {[['Khoản cần nộp', pendingFees, 'is-pending'], ['Khoản đã nộp', paidFees, 'is-paid'], ['Tổng khoản thu', fees, '']].map(([label, items, status]) =>

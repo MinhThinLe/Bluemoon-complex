@@ -1,14 +1,12 @@
 import { useState } from 'react'
+import ApartmentPicker from '../../../../components/apartment/ApartmentPicker.jsx'
 import Button from '../../../../components/ui/Button.jsx'
 import DataState from '../../../../components/ui/DataState.jsx'
 import { PageHeader, PanelHeader } from '../../../../components/ui/PageHeader.jsx'
-import Select from '../../../../components/ui/Select.jsx'
 import Table from '../../../../components/ui/Table.jsx'
 import useApartmentFees from '../../../../hooks/useApartmentFees.js'
 import { formatCurrency, formatDate } from '../../../../utils/formatters.js'
 import './payment-selection.css'
-
-const FLOOR_OPTIONS = Array.from({ length: 20 }, (_, i) => ({ value: String(i + 1), label: `Tầng ${i + 1}` }))
 
 export default function PaymentSelectionPage({ initialApartmentId = null, initialSelectedFeeIds = [], onViewQuery }) {
   const { floor, apartmentId, apartments, fees, loadingApartments, loadingFees, error, chooseFloor, chooseApartment, retry } = useApartmentFees({ initialApartmentId, maxFloor: 20 })
@@ -42,15 +40,10 @@ export default function PaymentSelectionPage({ initialApartmentId = null, initia
   return <main className="fee-selection-page">
     <PageHeader eyebrow="Hệ thống quản lý căn hộ / Tra cứu khoản thu" title="Chọn khoản cần tra cứu" description="Chọn các khoản chưa nộp để xem chi tiết." />
     <section className="bm-panel fee-selection-filter">
-      <PanelHeader title="Bước 1 · Chọn căn hộ" actions={<span className="fee-selection-count">Tầng 1–20</span>} />
-      <div className="fee-selection-filter__fields">
-        <Select label="Tầng" value={floor} options={FLOOR_OPTIONS} disabled={loadingApartments}
-          onChange={(event) => { chooseFloor(event.target.value); setSelectedFeeIds([]) }} />
-        <Select label="Căn hộ" value={apartmentId} disabled={loadingApartments || !apartments.length}
-          onChange={(event) => { chooseApartment(event.target.value); setSelectedFeeIds([]) }}
-          options={[{ value: '', label: loadingApartments ? 'Đang tải căn hộ...' : apartments.length ? 'Chọn căn hộ' : 'Tầng này chưa có dữ liệu căn hộ' },
-            ...apartments.map((a) => ({ value: String(a.id), label: `Căn ${a.id} · ${a.area} m² · ${a.typeName}` }))]} />
-      </div>
+      <PanelHeader title="Bước 1 · Chọn căn hộ" description="Chọn tầng, sau đó chọn căn hộ cần tra cứu." />
+      <ApartmentPicker floor={floor} apartmentId={apartmentId} apartments={apartments} maxFloor={20} loading={loadingApartments}
+        onFloorChange={(value) => { chooseFloor(value); setSelectedFeeIds([]) }}
+        onApartmentChange={(value) => { chooseApartment(value); setSelectedFeeIds([]) }} />
     </section>
     <section className="bm-panel fee-selection-list" aria-busy={busy}>
       <div className="fee-selection-list__heading">

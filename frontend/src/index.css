@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Space+Grotesk:wght@600;700&display=swap');
-
 :root {
-  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   color-scheme: dark;
   color: #d8dbe8;
   background: #0b0b1a;
@@ -25,7 +23,7 @@
   --bm-radius-sm: 4px;
   --bm-radius-md: 8px;
   --bm-radius-lg: 10px;
-  --bm-heading-font: 'Space Grotesk', 'Be Vietnam Pro', sans-serif;
+  --bm-heading-font: 'Segoe UI', Arial, sans-serif;
 }
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; min-width: 320px; min-height: 100%; }
