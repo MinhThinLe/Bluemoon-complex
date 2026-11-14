@@ -38,9 +38,9 @@ export default function QueryRequestPage({ initialApartmentId = null, initialSel
   const emptyMessage = !fees.length ? 'Căn hộ chưa có khoản thu.' : activeFilter === 'pending' ? 'Căn hộ không còn khoản cần nộp.' : 'Chưa có khoản nào được ghi nhận đã nộp.'
 
   return <main className="query-request-page">
-    <PageHeader eyebrow="Hệ thống quản lý căn hộ / Tra cứu khoản thu" title="Khoản cần nộp và đã nộp"
+    <PageHeader eyebrow="Hệ thống quản lý căn hộ / Tra cứu khoản thu" title="Chi tiết khoản thu"
       description="Theo dõi trạng thái các khoản thu của từng căn hộ."
-      actions={onBackToSelection && <Button variant="outline" icon="arrow-left" onClick={onBackToSelection}>Quay lại chọn khoản</Button>} />
+      actions={onBackToSelection && <Button variant="outline" icon="arrow-left" onClick={onBackToSelection}>Quay lại bước chọn khoản</Button>} />
     <section className="bm-panel query-request-filter">
       <PanelHeader title="Thông tin căn hộ" description="Chọn tầng và căn hộ để xem các khoản thu." />
       <ApartmentPicker floor={floor} apartmentId={apartmentId} apartments={apartments} loading={loadingApartments}

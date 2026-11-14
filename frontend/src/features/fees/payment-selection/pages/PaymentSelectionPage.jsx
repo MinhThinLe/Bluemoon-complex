@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from '../../../../utils/formatters.js'
 import './payment-selection.css'
 
 export default function PaymentSelectionPage({ initialApartmentId = null, initialSelectedFeeIds = [], onViewQuery }) {
-  const { floor, apartmentId, apartments, fees, loadingApartments, loadingFees, error, chooseFloor, chooseApartment, retry } = useApartmentFees({ initialApartmentId, maxFloor: 20 })
+  const { floor, apartmentId, apartments, fees, loadingApartments, loadingFees, error, chooseFloor, chooseApartment, retry } = useApartmentFees({ initialApartmentId })
   const [selectedFeeIds, setSelectedFeeIds] = useState(() => initialSelectedFeeIds.map(String))
   const unpaidFees = fees.filter((fee) => !fee.paid)
   const selectedFees = unpaidFees.filter((fee) => selectedFeeIds.includes(String(fee.id)))
@@ -41,7 +41,7 @@ export default function PaymentSelectionPage({ initialApartmentId = null, initia
     <PageHeader eyebrow="Hệ thống quản lý căn hộ / Tra cứu khoản thu" title="Chọn khoản cần tra cứu" description="Chọn các khoản chưa nộp để xem chi tiết." />
     <section className="bm-panel fee-selection-filter">
       <PanelHeader title="Bước 1 · Chọn căn hộ" description="Chọn tầng, sau đó chọn căn hộ cần tra cứu." />
-      <ApartmentPicker floor={floor} apartmentId={apartmentId} apartments={apartments} maxFloor={20} loading={loadingApartments}
+      <ApartmentPicker floor={floor} apartmentId={apartmentId} apartments={apartments} loading={loadingApartments}
         onFloorChange={(value) => { chooseFloor(value); setSelectedFeeIds([]) }}
         onApartmentChange={(value) => { chooseApartment(value); setSelectedFeeIds([]) }} />
     </section>

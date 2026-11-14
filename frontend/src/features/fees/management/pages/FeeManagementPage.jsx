@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '../../../../components/ui/Button.jsx'
 import Select from '../../../../components/ui/Select.jsx'
 import { Notice } from '../../../../components/ui/Feedback.jsx'
@@ -7,7 +7,7 @@ import Tabs from '../../../../components/ui/Tabs.jsx'
 import DeleteFeeDialog from '../components/DeleteFeeDialog.jsx'
 import FeeForm from '../components/FeeForm.jsx'
 import FeeTable from '../components/FeeTable.jsx'
-import { createFee, deleteFeesByType, getFeeTypes, updateFee } from '../services/feeManagementService.js'
+import { createFee, createFeeType, deleteFeesByType, getFeeTypes, updateFee } from '../services/feeManagementService.js'
 import './fee-management.css'
 
 const apartmentLabel = (value) => value === 'all' ? 'Tất cả' : value.join(', ')
@@ -21,6 +21,7 @@ export default function FeeManagementPage() {
   const [records, setRecords] = useState([])
   const [deleteTypeId, setDeleteTypeId] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const pendingNewTypeNames = useRef(new Set())
 
   const loadTypes = useCallback(async () => {
     setTypesLoading(true)
@@ -43,12 +44,38 @@ export default function FeeManagementPage() {
     if (busy) return false
     setBusy(true); setNotice(null)
     try {
-      const feeType = feeTypes.find((item) => String(item.id) === String(payload.feeTypeId))
       if (mode === 'create') {
-        await createFee(payload)
-        addRecord({ action: 'Tạo', feeType: feeType?.name ?? payload.feeTypeId, apartment: apartmentLabel(payload.apartmentIds), amount: payload.amount })
-        setNotice({ kind: 'success', text: 'Đã tạo khoản thu thành công.' })
+        let currentTypes = feeTypes
+        let feeType = currentTypes.find((item) => String(item.id) === String(payload.feeTypeId))
+        if (payload.feeTypeMode === 'new') {
+          const newName = payload.newFeeTypeName.trim()
+          feeType = currentTypes.find((item) => item.name === newName)
+          if (feeType && !pendingNewTypeNames.current.has(newName)) {
+            throw new Error('Tên loại khoản thu đã tồn tại. Hãy chọn loại có sẵn trong danh sách.')
+          }
+          if (!feeType && pendingNewTypeNames.current.has(newName)) {
+            currentTypes = await getFeeTypes()
+            setFeeTypes(currentTypes)
+            feeType = currentTypes.find((item) => item.name === newName)
+            if (!feeType) throw new Error('Không lấy được mã loại khoản thu vừa tạo. Vui lòng tải lại trang và thử lại.')
+          }
+          if (!feeType) {
+            await createFeeType(newName)
+            pendingNewTypeNames.current.add(newName)
+            currentTypes = await getFeeTypes()
+            setFeeTypes(currentTypes)
+            feeType = currentTypes.find((item) => item.name === newName)
+          }
+          if (!feeType) throw new Error('Đã tạo loại khoản thu nhưng không lấy được mã loại mới. Vui lòng tải lại và thử lại.')
+        }
+        if (!feeType) throw new Error('Loại khoản thu đã chọn không còn tồn tại. Vui lòng tải lại danh sách.')
+        await createFee({ ...payload, feeTypeId: feeType.id })
+        if (payload.feeTypeMode === 'new') pendingNewTypeNames.current.delete(payload.newFeeTypeName.trim())
+        addRecord({ action: payload.feeTypeMode === 'new' ? 'Tạo loại và khoản thu' : 'Tạo', feeType: feeType.name, apartment: apartmentLabel(payload.apartmentIds), amount: payload.amount })
+        setNotice({ kind: 'success', text: payload.feeTypeMode === 'new' ? `Đã tạo loại “${feeType.name}” và khoản thu thành công.` : 'Đã tạo khoản thu thành công.' })
       } else {
+        const feeType = feeTypes.find((item) => String(item.id) === String(payload.feeTypeId))
+        if (!feeType) throw new Error('Loại khoản thu đã chọn không còn tồn tại. Vui lòng tải lại danh sách.')
         await updateFee(payload)
         addRecord({ action: 'Sửa', feeType: feeType?.name ?? payload.feeTypeId, apartment: payload.apartmentId, amount: payload.amount })
         setNotice({ kind: 'success', text: 'Đã cập nhật khoản thu thành công.' })

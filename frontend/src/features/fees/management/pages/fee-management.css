@@ -8,6 +8,18 @@
 .fee-admin-tabs button.is-active { color: var(--bm-blue); border-bottom-color: var(--bm-blue); background: transparent; }
 .fee-admin-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .fee-admin-form > fieldset { display: contents; }
+.fee-admin-type-mode { grid-column: 1 / -1; }
+.fee-admin-apartments { display: grid; grid-column: 1 / -1; grid-template-columns: 180px minmax(0, 1fr); gap: 10px 20px; }
+.fee-admin-apartments__label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--bm-text); font-size: 12px; font-weight: 500; }
+.fee-admin-apartments__label small { color: var(--bm-muted); font-size: 11px; font-weight: 400; }
+.fee-admin-apartments__state, .fee-admin-apartments__grid, .fee-admin-apartments > .bm-field__message, .fee-admin-apartments > .fee-admin-inline-error { grid-column: 1 / -1; }
+.fee-admin-apartments__state { display: flex; min-height: 52px; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 1px dashed var(--bm-border); border-radius: 8px; color: var(--bm-muted); background: rgba(255,255,255,.015); font-size: 12px; text-align: center; }
+.fee-admin-apartments__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 156px; overflow-y: auto; padding-right: 4px; }
+.fee-admin-apartments__grid button { display: flex; min-width: 0; min-height: 56px; align-items: flex-start; padding: 9px 10px; border: 1px solid var(--bm-border); border-radius: 8px; color: var(--bm-text); background: var(--bm-input); flex-direction: column; gap: 3px; text-align: left; }
+.fee-admin-apartments__grid button:hover { border-color: var(--bm-control-border); }
+.fee-admin-apartments__grid button.is-selected { border-color: var(--bm-blue); background: var(--bm-blue-soft); box-shadow: inset 2px 0 var(--bm-blue); }
+.fee-admin-apartments__grid strong { color: var(--bm-ink); font-size: 12px; }
+.fee-admin-apartments__grid small { overflow: hidden; width: 100%; color: var(--bm-muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .fee-admin-scope { display: flex; min-height: 40px; gap: 4px; padding: 4px; border: 1px solid var(--bm-control-border); border-radius: 8px; }
 .fee-admin-scope label { position: relative; display: flex; flex: 1; cursor: pointer; }
 .fee-admin-scope span { display: grid; width: 100%; place-items: center; padding: 2px 6px; border-radius: 4px; color: var(--bm-muted); font-size: 12px; white-space: nowrap; }
@@ -28,4 +40,4 @@
 .fee-admin-danger-copy strong { color: var(--bm-ink); }
 .fee-admin-danger-copy p { margin: 12px 0 0; color: var(--bm-muted); font-size: 12px; }
 @media (max-width: 850px) { .fee-admin-grid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .fee-admin-card, .fee-admin-history { padding: 20px 16px; } .fee-admin-form { grid-template-columns: 1fr; } .fee-admin-form__actions .bm-button { width: 100%; } }
+@media (max-width: 560px) { .fee-admin-card, .fee-admin-history { padding: 20px 16px; } .fee-admin-form, .fee-admin-apartments { grid-template-columns: 1fr; } .fee-admin-apartments__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fee-admin-form__actions .bm-button { width: 100%; } }
