@@ -6,8 +6,6 @@ use bluemoon_authentication::{
 };
 use http::StatusCode;
 
-use serde_json::Value;
-
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
@@ -123,7 +121,7 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: Value| FeeAdditionRequest::try_from(json)))
+            .and(warp::body::json::<FeeAdditionRequest>())
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee, server: Server, token| server.new_fee_handle(token, fee))
