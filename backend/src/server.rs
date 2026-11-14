@@ -197,8 +197,8 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
         return Err(err);
     }
 
-    if let Some(DatabaseError(db_err)) = err.find() {
-        error!("Database error: {db_err}");
+    if let Some(db_err) = err.find::<DatabaseError>() {
+        error!("Database error: {db_err:?}");
         return Ok(with_status(
             html("Database error"),
             StatusCode::INTERNAL_SERVER_ERROR,
