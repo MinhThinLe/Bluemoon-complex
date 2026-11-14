@@ -6,6 +6,6 @@ mod tables;
 
 pub use database::{Database, DatabaseError};
 pub use tables::{
-    ApartmentId, Apartments, DatabaseConfig, FeeAdditionError, FeeAdditionRequest,
-    FeeModificationRequest, FeeType, FeeTypeError, FeeTypeId, User,
+    ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeError,
+    FeeTypeId, User,
 };

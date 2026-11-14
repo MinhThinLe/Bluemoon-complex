@@ -117,13 +117,15 @@ Không thể thất bại
 
 ## Thân yêu cầu
 
-| Tên trường | Kiểu dữ liệu         | Ghi chú                    |
-| ---------- | -------------------- | -------------------------- |
-| `amount`   | `number`             | > 0                        |
-| `for`      | "all" / \[`number`\] | Phải là id căn hộ hợp lệ   |
-| `type`     | `number`             | Phải là id loại phí hợp lệ |
-| `optional` | `bool`               |                            |
-| `due-on`   | `datetime`           |                            |
+| Tên trường | Kiểu dữ liệu         | Ghi chú                            |
+| ---------- | -------------------- | ---------------------------------- |
+| `amount`   | `number`             | > 0                                |
+| `for`      | \[`number`\]         | Tùy chọn, phải là id căn hộ hợp lệ |
+| `type`     | `number`             | Phải là id loại phí hợp lệ         |
+| `optional` | `bool`               |                                    |
+| `due-on`   | `datetime`           |                                    |
+
+**Ghi chú**: Để tạo khoản thu cho chỉ một số căn hộ nhất định, thêm trường `"for"` vào thân yêu cầu, trường hợp trường này trống, khoản phí sẽ được tạo cho tất cả các căn hộ.
 
 ## Thất bại
 

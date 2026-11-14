@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use rusqlite::{Connection, Error, params};
@@ -19,13 +20,16 @@ pub struct Database {
 }
 
 #[derive(Debug)]
-pub struct DatabaseError(pub Error);
+pub enum DatabaseError {
+    NoRowsAltered,
+    SQLite(Error),
+}
 
 impl Reject for DatabaseError {}
 
 impl From<Error> for DatabaseError {
     fn from(value: Error) -> Self {
-        Self(value)
+        Self::SQLite(value)
     }
 }
 
@@ -159,27 +163,7 @@ impl Database {
                     name: row.get(1)?,
                 })
             })?
-            .map(|item| item.map_err(DatabaseError))
-            .collect()
-    }
-
-    /// Get every apartments' ID
-    ///
-    /// # Errors
-    ///
-    /// Will return an error if any of the underlying SQLite calls fail
-    #[allow(
-        clippy::missing_panics_doc,
-        reason = "Should only panic with invalid SQL"
-    )]
-    pub async fn get_all_apartment_id(&self) -> Result<Vec<ApartmentId>, DatabaseError> {
-        const QUERY: &str = "select id from Apartments;";
-
-        let database = self.connection.lock().await;
-        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
-        statement
-            .query_map((), |row| row.get(0))?
-            .map(|item| item.map_err(DatabaseError))
+            .map(|item| item.map_err(DatabaseError::from))
             .collect()
     }
 
@@ -192,32 +176,39 @@ impl Database {
     /// # Panics
     ///
     /// Will cause a panic if all writes succeed but committing them fail
-    pub async fn add_fee(
-        &self,
-        fee: FeeAdditionRequest,
-        for_apartments: &[ApartmentId],
-    ) -> Result<(), DatabaseError> {
-        const QUERY: &str = "insert into Fees
+    pub async fn add_fee(&self, request: FeeAdditionRequest) -> Result<(), DatabaseError> {
+        const INSERT_RECORDS: &str = "insert into Fees
             (amount, paid, optional, due_on, type_id, apartment_id) values
             (?     , ?   , ?       , ?     , ?      , ?           );";
-
         let mut database = self.connection.lock().await;
-        let transaction = database.transaction().map_err(DatabaseError)?;
-        let mut statement = transaction.prepare(QUERY).expect("Invalid SQL");
+        let apartment_ids = get_all_apartment_ids(&database)?;
 
-        for_apartments
+        let apartment_ids = match request.for_apartments {
+            Some(ids) if ids.iter().all(|id| apartment_ids.contains(&id)) => deduplicate(ids),
+            Some(_) => Err(DatabaseError::NoRowsAltered)?,
+            None => apartment_ids,
+        };
+
+        if apartment_ids.is_empty() {
+            Err(DatabaseError::NoRowsAltered)?;
+        }
+
+        let transaction = database.transaction().map_err(DatabaseError::from)?;
+        let mut statement = transaction.prepare(INSERT_RECORDS).expect("Invalid SQL");
+
+        apartment_ids
             .iter()
             .map(|apartment_id| {
                 statement
                     .execute(params![
-                        fee.amount,
+                        request.amount,
                         false,
-                        fee.optional,
-                        fee.due_on,
-                        fee.type_id,
+                        request.optional,
+                        request.due_on,
+                        request.type_id,
                         apartment_id,
                     ])
-                    .map_err(DatabaseError)
+                    .map_err(DatabaseError::from)
             })
             .collect::<Result<Vec<usize>, DatabaseError>>()?;
 
@@ -326,7 +317,7 @@ impl Database {
                     type_name: row.get(2)?,
                 })
             })?
-            .map(|item| item.map_err(DatabaseError))
+            .map(|item| item.map_err(DatabaseError::from))
             .collect()
     }
 
@@ -369,9 +360,19 @@ impl Database {
                     due_on: row.get(5)?,
                 })
             })?
-            .map(|item| item.map_err(DatabaseError))
+            .map(|item| item.map_err(DatabaseError::from))
             .collect()
     }
+}
+
+fn get_all_apartment_ids(connection: &Connection) -> Result<Vec<ApartmentId>, DatabaseError> {
+    const QUERY: &str = "select id from Apartments;";
+
+    let mut statement = connection.prepare(QUERY).expect("Invalid SQL");
+    statement
+        .query_map((), |row| row.get(0))?
+        .map(|item| item.map_err(DatabaseError::from))
+        .collect()
 }
 
 fn create_tables(connection: &Connection) {
@@ -382,4 +383,12 @@ fn create_tables(connection: &Connection) {
     connection
         .execute_batch(INIT_ROLES)
         .expect("Adding roles failed");
+}
+
+fn deduplicate(input: Vec<i32>) -> Vec<i32> {
+    input
+        .into_iter()
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .collect()
 }
