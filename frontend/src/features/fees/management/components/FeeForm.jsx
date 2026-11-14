@@ -18,11 +18,15 @@ export default function FeeForm({ mode, feeTypes, busy, onSubmit }) {
   const [apartmentsError, setApartmentsError] = useState('')
   const typeOptions = useMemo(() => [{ value: '', label: 'Chọn loại khoản thu' }, ...feeTypes.map((type) => ({ value: String(type.id), label: type.name }))], [feeTypes])
   const setField = (name, value) => { setForm((current) => ({ ...current, [name]: value })); setErrors((current) => ({ ...current, [name]: undefined })) }
+  const chooseFloor = (value) => { setFloor(value); setApartmentsLoading(true); setApartmentsError('') }
+  const chooseApartmentScope = (value) => {
+    setField('apartmentScope', value)
+    if (value === 'selected') { setApartmentsLoading(true); setApartmentsError('') }
+  }
 
   useEffect(() => {
     if (mode !== 'create' || form.apartmentScope !== 'selected') return undefined
     let active = true
-    setApartmentsLoading(true); setApartmentsError('')
     getApartmentsByFloor(floor)
       .then((items) => { if (active) { setApartments(items); setForm((current) => ({ ...current, apartmentIds: current.apartmentIds.filter((id) => items.some((item) => item.id === id)) })) } })
       .catch((error) => { if (active) { setApartments([]); setApartmentsError(error.message) } })
@@ -83,13 +87,13 @@ export default function FeeForm({ mode, feeTypes, busy, onSubmit }) {
         <span className="bm-field__label" id={scopeId}>Phạm vi áp dụng</span>
         <div className="fee-admin-scope" role="radiogroup" aria-labelledby={scopeId}>
           {[['selected', 'Một số căn hộ'], ['all', 'Tất cả căn hộ']].map(([value, label]) => <label key={value}>
-            <input className="bm-sr-only" type="radio" name="apartmentScope" value={value} checked={form.apartmentScope === value} onChange={() => setField('apartmentScope', value)} />
+            <input className="bm-sr-only" type="radio" name="apartmentScope" value={value} checked={form.apartmentScope === value} onChange={() => chooseApartmentScope(value)} />
             <span>{label}</span>
           </label>)}
         </div>
       </div>
       {form.apartmentScope === 'selected' && <div className="fee-admin-apartments">
-        <Select label="Tầng" options={FLOOR_OPTIONS} value={floor} disabled={apartmentsLoading} onChange={(event) => setFloor(event.target.value)} />
+        <Select label="Tầng" options={FLOOR_OPTIONS} value={floor} disabled={apartmentsLoading} onChange={(event) => chooseFloor(event.target.value)} />
         <div className="fee-admin-apartments__label"><span>Căn hộ áp dụng *</span><small>{apartmentsLoading ? 'Đang tải...' : `${form.apartmentIds.length} căn đã chọn`}</small></div>
         {apartmentsError ? <p className="fee-admin-inline-error">{apartmentsError}</p>
           : apartmentsLoading ? <div className="fee-admin-apartments__state"><span className="bm-spinner" />Đang tải căn hộ...</div>
