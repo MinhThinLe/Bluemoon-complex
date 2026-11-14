@@ -6,7 +6,7 @@ use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
 use bluemoon_database::{
-    ApartmentId, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
+    ApartmentId, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
 };
 
 use crate::Server;
@@ -64,9 +64,13 @@ impl Server {
             return Ok(with_status("Invalid amount", StatusCode::BAD_REQUEST));
         }
 
-        self.database.add_fee(request).await?;
-
-        Ok(with_status("Success", StatusCode::OK))
+        Ok(match self.database.add_fee(request).await {
+            Ok(()) => with_status("Success", StatusCode::OK),
+            Err(DatabaseError::NoRowsAltered) => {
+                with_status("Invalid apartment id list supplied", StatusCode::NOT_FOUND)
+            }
+            Err(other) => Err(other)?,
+        })
     }
 
     pub async fn delete_fee_handle(
