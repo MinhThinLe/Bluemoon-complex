@@ -17,8 +17,8 @@ function feeCategory(typeName = '') {
 function feePeriod(unixTime) {
   const date = new Date(Number(unixTime) * 1000)
   if (Number.isNaN(date.getTime())) return 'Chưa xác định'
-  const value = new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric' }).format(date)
-  return `Tháng ${value}`
+  // Month/year-only Intl formatting varies across browser ICU versions.
+  return `Tháng ${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
 }
 
 export function normalizeApartmentFee(fee, apartmentId, index = 0) {

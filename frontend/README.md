@@ -41,3 +41,11 @@ npm run lint
 npm test
 npm run build
 ```
+
+## Thiết kế BlueMoon
+
+Giao diện desktop dựa trên [bản Figma đã duyệt](https://www.figma.com/design/nLxfTj0yqokXDrHftw351J/bluemoon?node-id=10-2): nền navy, hành động chính cyan, font Be Vietnam Pro và tiêu đề Space Grotesk/Chakra Petch. Các icon gốc cần thiết được lưu trong `public/figma`, không phụ thuộc URL export tạm.
+
+Bốn màn dùng chung tokens trong `src/index.css` và component ở `src/components/ui`. Chọn khoản và tra cứu dùng `useApartmentFees` để quản lý loading, lỗi, retry và hủy kết quả request cũ khi đổi căn hộ. Lỗi tải không hiển thị thành số dư 0 hoặc danh sách rỗng. Màn nhỏ dùng danh sách thẻ cho khoản thu ở trang tra cứu; các bảng còn lại cuộn ngang khi cần.
+
+Luồng xác thực, cookie và endpoint hiện có được giữ nguyên. Giao diện không chứa dữ liệu mẫu từ prototype. Lịch sử quản lý chỉ tồn tại trong phiên, và việc chọn khoản chỉ chuyển sang tra cứu, không thực hiện thanh toán. Font tải từ Google Fonts; nếu không có mạng trình duyệt dùng font hệ thống thay thế.
