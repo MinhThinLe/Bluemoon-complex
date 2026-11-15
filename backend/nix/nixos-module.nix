@@ -1,11 +1,12 @@
 {
+    self,
     pkgs,
     lib,
     config,
     ...
 }:
 let
-    inherit (pkgs.lib)
+    inherit (lib)
         mkIf
         mkOption
         types
@@ -21,7 +22,7 @@ in
 
         package = mkOption {
             type = types.nullOr types.package;
-            default = null;
+            default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
             description = "The backend to use";
         };
 

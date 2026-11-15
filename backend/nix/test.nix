@@ -1,8 +1,9 @@
-(import ./lib.nix) {
+{ inputs, pkgs, }:
+pkgs.testers.runNixOSTest {
     name = "from-nixos";
     nodes = {
-        node1 = { self, pkgs, ... }: {
-            imports = [ self.nixosModules.bluemoon-backend ];
+        node1 = { pkgs, ... }: {
+            imports = [ inputs.self.nixosModules.default ];
             environment.systemPackages = [ pkgs.curl ];
 
             services.bluemoon-backend = {
