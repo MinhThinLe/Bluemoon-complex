@@ -7,4 +7,10 @@
         rustfmt
         sqlite
     ];
+
+    shellHook = ''
+        if [ -x "$(command -v zsh)" ]; then
+            exec zsh
+        fi
+        '';
 }
