@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Báo cáo một lỗi
+title: ''
+labels: bug
+assignees: ''
+
+---
+
 # Mô tả
 
 Mô tả chi tiết lỗi ở đây

@@ -1,3 +1,12 @@
+---
+name: Feature request
+about: Đề xuất một thay đổi
+title: ''
+labels: documentation, help wanted
+assignees: ''
+
+---
+
 # Vấn đề
 
 Mô tả vấn đề hiện tại ở đây
