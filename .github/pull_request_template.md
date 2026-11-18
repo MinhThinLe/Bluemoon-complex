@@ -1,9 +1,10 @@
-# Tiêu đề
-
-
 # Tóm tắt
 
-# Mô tả (tùy chọn)
+Tóm tắt nội dung thay đổi ở đây
+
+# Giải quyết
+
+Liệt kê các issue sẽ được giải quyết nếu pull request này được chấp thuận ở đây
 
 # Checklist
 
