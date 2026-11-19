@@ -326,6 +326,13 @@ impl Database {
     /// # Errors
     ///
     /// Will return an error if any underlying calls to sqlite fails
+    pub async fn apartment_exists(&self, apartment_id: ApartmentId) -> Result<bool, DatabaseError> {
+        const QUERY: &str = "select exists(select 1 from Apartments where id = ?);";
+
+        let database = self.connection.lock().await;
+        Ok(database.query_row(QUERY, params![apartment_id], |row| row.get(0))?)
+    }
+    
     #[allow(
         clippy::missing_panics_doc,
         reason = "Should only panic with invalid SQL"
