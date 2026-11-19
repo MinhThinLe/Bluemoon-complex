@@ -53,6 +53,7 @@ impl Server {
             .or(self.clone().get_apartments())
             .or(self.clone().get_apartment_fees())
             .or(self.clone().process_authentication())
+            .or(self.clone().logout())
             .or(self.request_authentication())
     }
 
@@ -183,6 +184,18 @@ impl Server {
             .authenticated_as(AuthenticationToken::new(&token))
             .await
             .ok_or_else(|| Rejection::from(NoSessionToken))
+    }
+
+    fn logout(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::post()
+            .and(path(API_ROOT_URL))
+            .and(path!("logout"))
+            .and(self.clone().inject())
+            .and(cookie("Session-Token"))
+            .and_then(|server: Server, token: String| {
+                server.logout_handle(token)
+            })
+            .recover(handle_rejection)
     }
 }
 

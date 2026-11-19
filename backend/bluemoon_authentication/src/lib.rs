@@ -72,6 +72,9 @@ impl AuthenticatedUsers {
     pub async fn authenticated_as(&self, token: AuthenticationToken) -> Option<PrivilegeLevel> {
         self.tokens.read().await.get(&token).copied()
     }
+    pub async fn revoke_token(&self, token: AuthenticationToken) -> bool {
+    self.tokens.write().await.remove(&token).is_some()
+    }
 }
 
 impl AuthenticationToken {
