@@ -1,9 +1,14 @@
-use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
+use bluemoon_authentication::{
+    AuthenticationToken,
+    NoSessionToken,
+    PrivilegeLevel,
+    UnderAuthenticated,
+};
 use http::StatusCode;
 
 use serde_json::json;
 use warp::reject::Rejection;
-use warp::reply::{Reply, html, json, with_status};
+use warp::reply::{Reply, html, json, with_header, with_status};
 
 use bluemoon_database::{
     ApartmentId, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
@@ -162,6 +167,25 @@ impl Server {
         Ok(with_status(
             json(&json!({ "fees": content })),
             StatusCode::OK,
+        ))
+    }
+
+    pub async fn logout_handle(
+        self,
+        token: String,
+    ) -> Result<impl Reply, Rejection> {
+        let token = AuthenticationToken::new(&token);
+
+        if !self.users.revoke_token(token).await {
+            Err(NoSessionToken)?;
+        }
+
+        let reply = with_status("Logout successful", StatusCode::OK);
+
+        Ok(with_header(
+            reply,
+            "Set-Cookie",
+            "Session-Token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax",
         ))
     }
 }
