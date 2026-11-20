@@ -35,5 +35,6 @@ pkgs.testers.runNixOSTest {
         output = node1.fail("${../tests/add-fee-type.sh}")
 
         output = node1.succeed("${../tests/fee-addition.sh}")
+        output = node1.succeed("${../tests/logout.sh}")
     '';
 }
