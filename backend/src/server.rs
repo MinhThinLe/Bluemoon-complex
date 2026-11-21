@@ -181,7 +181,7 @@ impl Server {
 
     async fn extract_token(self, token: String) -> Result<PrivilegeLevel, Rejection> {
         self.users
-            .authenticated_as(AuthenticationToken::new(&token))
+            .authenticated_as(AuthenticationToken::new(token))
             .await
             .ok_or_else(|| Rejection::from(NoSessionToken))
     }
@@ -192,9 +192,7 @@ impl Server {
             .and(path!("logout"))
             .and(self.clone().inject())
             .and(cookie("Session-Token"))
-            .and_then(|server: Server, token: String| {
-                server.logout_handle(token)
-            })
+            .and_then(|server: Server, token: String| server.logout_handle(token))
             .recover(handle_rejection)
     }
 }

@@ -184,7 +184,7 @@ impl Database {
         let apartment_ids = get_all_apartment_ids(&database)?;
 
         let apartment_ids = match request.for_apartments {
-            Some(ids) if ids.iter().all(|id| apartment_ids.contains(&id)) => deduplicate(ids),
+            Some(ids) if ids.iter().all(|id| apartment_ids.contains(id)) => deduplicate(ids),
             Some(_) => Err(DatabaseError::NoRowsAltered)?,
             None => apartment_ids,
         };

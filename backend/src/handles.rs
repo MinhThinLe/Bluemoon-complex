@@ -1,8 +1,5 @@
 use bluemoon_authentication::{
-    AuthenticationToken,
-    NoSessionToken,
-    PrivilegeLevel,
-    UnderAuthenticated,
+    AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
 };
 use http::StatusCode;
 
@@ -170,11 +167,8 @@ impl Server {
         ))
     }
 
-    pub async fn logout_handle(
-        self,
-        token: String,
-    ) -> Result<impl Reply, Rejection> {
-        let token = AuthenticationToken::new(&token);
+    pub async fn logout_handle(self, token: String) -> Result<impl Reply, Rejection> {
+        let token = AuthenticationToken::new(token);
 
         if !self.users.revoke_token(token).await {
             Err(NoSessionToken)?;

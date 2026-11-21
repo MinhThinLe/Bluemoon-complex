@@ -8,8 +8,10 @@ use std::sync::Arc;
 
 use base64::Engine;
 
+use base64::prelude::BASE64_STANDARD;
 use http::StatusCode;
 
+use rand::Rng;
 use sha2::{Digest, Sha256};
 
 use tokio::sync::RwLock;
@@ -72,14 +74,28 @@ impl AuthenticatedUsers {
     pub async fn authenticated_as(&self, token: AuthenticationToken) -> Option<PrivilegeLevel> {
         self.tokens.read().await.get(&token).copied()
     }
+
     pub async fn revoke_token(&self, token: AuthenticationToken) -> bool {
-    self.tokens.write().await.remove(&token).is_some()
+        self.tokens.write().await.remove(&token).is_some()
     }
 }
 
 impl AuthenticationToken {
-    pub fn new(value: &impl ToString) -> Self {
-        Self(value.to_string())
+    #[must_use]
+    pub fn new(token: String) -> Self {
+        Self(token)
+    }
+
+    fn generate() -> Self {
+        const DESIRED_TOKEN_LENGTH: usize = 64;
+        const BASE64_DATA_DENSITY: usize = 6;
+        const BITS_PER_BYTE: usize = 8;
+        let mut data = [0u8; DESIRED_TOKEN_LENGTH * BASE64_DATA_DENSITY / BITS_PER_BYTE];
+
+        rand::rng().fill_bytes(&mut data);
+
+        let encoded = BASE64_STANDARD.encode(data);
+        AuthenticationToken(encoded)
     }
 }
 
@@ -108,29 +124,28 @@ impl AuthenticatedUsers {
         };
 
         let salted_password = format!("{}{}", credentials.password, user.salt);
-
-        let hashed_password =
-            base64::prelude::BASE64_STANDARD.encode(Sha256::digest(salted_password));
+        let hashed_password = BASE64_STANDARD.encode(Sha256::digest(salted_password));
 
         if hashed_password != user.hashed_password {
             return Ok(invalid_credentials());
         }
 
-        let token = AuthenticationToken::new(&hashed_password);
+        let token = AuthenticationToken::generate();
         let Ok(role) = PrivilegeLevel::from_str(&user.role) else {
             panic!("Unknown role {}", user.role);
         };
+
+        let response = valid_credentials(&token);
         self.tokens.write().await.insert(token, role);
 
-        // Using hashed_password is probably a bad idea
-        Ok(valid_credentials(&hashed_password))
+        Ok(response)
     }
 }
 
-fn valid_credentials(cookie: &str) -> Response {
+fn valid_credentials(token: &AuthenticationToken) -> Response {
     let reply_content = html("Authenticated");
     let reply = with_status(reply_content, StatusCode::OK);
-    let reply = with_header(reply, "Set-Cookie", format!("Session-Token={cookie}"));
+    let reply = with_header(reply, "Set-Cookie", format!("Session-Token={}", token.0));
 
     reply.into_response()
 }
@@ -148,7 +163,7 @@ fn process_login(auth: &str) -> Option<Credential> {
         return None;
     }
 
-    let credentials = base64::prelude::BASE64_STANDARD.decode(auth_key).ok()?;
+    let credentials = BASE64_STANDARD.decode(auth_key).ok()?;
 
     let stringified = String::from_utf8(credentials).ok()?;
 
