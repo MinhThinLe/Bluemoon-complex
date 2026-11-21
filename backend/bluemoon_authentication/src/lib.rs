@@ -3,6 +3,7 @@
 
 use std::collections::HashMap;
 use std::convert::Infallible;
+use std::hash::Hash;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -16,12 +17,12 @@ use sha2::{Digest, Sha256};
 
 use tokio::sync::RwLock;
 
-use warp::reject::Reject;
+use warp::reject::{Reject, Rejection};
 use warp::reply::{Reply, Response, html, with_header, with_status};
 
 use bluemoon_database::Database;
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
 
 pub struct Credential {
@@ -39,6 +40,7 @@ pub enum PrivilegeLevel {
 #[derive(Clone, Default)]
 pub struct AuthenticatedUsers {
     tokens: Arc<RwLock<HashMap<AuthenticationToken, PrivilegeLevel>>>,
+    users: Arc<RwLock<HashMap<String, AuthenticationToken>>>,
 }
 
 #[derive(Debug)]
@@ -68,6 +70,7 @@ impl AuthenticatedUsers {
     pub fn new() -> Self {
         Self {
             tokens: Arc::new(RwLock::new(HashMap::new())),
+            users: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -75,8 +78,22 @@ impl AuthenticatedUsers {
         self.tokens.read().await.get(&token).copied()
     }
 
-    pub async fn revoke_token(&self, token: AuthenticationToken) -> bool {
-        self.tokens.write().await.remove(&token).is_some()
+    async fn revoke_token(&mut self, token: &AuthenticationToken) -> Result<(), ()> {
+        self.users.write().await.retain(|_key, item| item != token);
+        self.tokens.write().await.remove(token).ok_or(())?;
+        Ok(())
+    }
+
+    async fn insert(&mut self, user: String, role: PrivilegeLevel) -> AuthenticationToken {
+        let token = AuthenticationToken::generate();
+        if let Some(old_token) = self.users.read().await.get(&user) {
+            self.tokens.write().await.remove(old_token);
+        }
+
+        self.users.write().await.insert(user, token.clone());
+        self.tokens.write().await.insert(token.clone(), role);
+
+        token
     }
 }
 
@@ -111,7 +128,7 @@ impl AuthenticatedUsers {
     ///
     /// Will panic if the database contains garbage data
     pub async fn process_authentication_handle(
-        self,
+        mut self,
         request: String,
         database: Database,
     ) -> Result<impl Reply, Infallible> {
@@ -130,15 +147,34 @@ impl AuthenticatedUsers {
             return Ok(invalid_credentials());
         }
 
-        let token = AuthenticationToken::generate();
         let Ok(role) = PrivilegeLevel::from_str(&user.role) else {
             panic!("Unknown role {}", user.role);
         };
 
-        let response = valid_credentials(&token);
-        self.tokens.write().await.insert(token, role);
+        let token = self.insert(user.username, role).await;
 
-        Ok(response)
+        Ok(valid_credentials(&token))
+    }
+
+    /// Processes logouts, removes the coressponding `AuthenticationToken` from the server's memory
+    ///
+    /// # Errors
+    ///
+    /// Will return an error in case a non-existant token was supplied
+    pub async fn logout_handle(mut self, token: String) -> Result<impl Reply, Rejection> {
+        let token = AuthenticationToken::new(token);
+
+        if self.revoke_token(&token).await.is_err() {
+            Err(NoSessionToken)?;
+        }
+
+        let reply = with_status("Logout successful", StatusCode::OK);
+
+        Ok(with_header(
+            reply,
+            "Set-Cookie",
+            "Session-Token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax",
+        ))
     }
 }
 
