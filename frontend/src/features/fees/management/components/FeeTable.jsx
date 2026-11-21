@@ -1,4 +1,3 @@
-import Button from '../../../../components/ui/Button.jsx'
 import Table from '../../../../components/ui/Table.jsx'
 import { PanelHeader } from '../../../../components/ui/PageHeader.jsx'
 import { formatCurrency } from '../../../../utils/formatters.js'
@@ -9,5 +8,5 @@ export default function FeeTable({ records }) {
     { key: 'amount', title: 'Số tiền', align: 'right', render: (row) => row.amount ? formatCurrency(row.amount) : '—' },
     { key: 'status', title: 'Kết quả', render: () => <span className="fee-admin-status">Thành công</span> },
   ]
-  return <section className="bm-panel fee-admin-card fee-admin-history"><PanelHeader className="fee-admin-card__heading" eyebrow="Phiên hiện tại" title="Lịch sử thao tác" actions={<Button variant="ghost" size="small" disabled>Chưa có API danh sách</Button>} /><Table columns={columns} data={records} emptyMessage="Chưa có thao tác thành công trong phiên này." /></section>
+  return <section className="bm-panel fee-admin-history"><PanelHeader title="Thao tác trong phiên này" /><Table columns={columns} data={records} emptyMessage="Chưa có thao tác thành công trong phiên này." /><p className="fee-admin-history__note">Lịch sử thao tác chỉ lưu trong phiên làm việc hiện tại của trình duyệt.</p></section>
 }
