@@ -13,3 +13,7 @@ export function authenticate(username, password) {
     headers: { Authorization: `Basic ${encodeBasicCredentials(username, password)}` },
   })
 }
+
+export function logout() {
+  return apiRequest('/logout', { method: 'POST' })
+}
