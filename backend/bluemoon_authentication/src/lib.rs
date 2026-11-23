@@ -3,6 +3,7 @@
 
 use std::collections::HashMap;
 use std::convert::Infallible;
+use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -61,6 +62,16 @@ impl FromStr for PrivilegeLevel {
             "accountant" => Self::Accountant,
             "admin" => Self::Admin,
             _other => return Err(()),
+        })
+    }
+}
+
+impl fmt::Display for PrivilegeLevel {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::Resident => "resident",
+            Self::Accountant => "accountant",
+            Self::Admin => "admin",
         })
     }
 }
@@ -154,6 +165,20 @@ impl AuthenticatedUsers {
         let token = self.insert(user.username, role).await;
 
         Ok(valid_credentials(&token))
+    }
+
+    /// Returns the privilege level of the session identified by `token`.
+    ///
+    /// # Errors
+    ///
+    /// Will return `NoSessionToken` when the token is unknown or has been revoked.
+    pub async fn current_session_handle(self, token: String) -> Result<impl Reply, Rejection> {
+        let role = self
+            .authenticated_as(AuthenticationToken::new(token))
+            .await
+            .ok_or_else(|| Rejection::from(NoSessionToken))?;
+
+        Ok(with_status(role.to_string(), StatusCode::OK))
     }
 
     /// Processes logouts, removes the coressponding `AuthenticationToken` from the server's memory

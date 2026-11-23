@@ -52,6 +52,7 @@ impl Server {
             .or(self.clone().edit_fee())
             .or(self.clone().get_apartments())
             .or(self.clone().get_apartment_fees())
+            .or(self.clone().current_session())
             .or(self.clone().process_authentication())
             .or(self.clone().logout())
             .or(self.request_authentication())
@@ -143,6 +144,16 @@ impl Server {
             .recover(handle_rejection)
     }
 
+    fn current_session(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("session"))
+            .and(self.clone().inject())
+            .and(cookie("Session-Token"))
+            .and_then(|server: Server, token: String| server.users.current_session_handle(token))
+            .recover(handle_rejection)
+    }
+
     fn process_authentication(
         self,
     ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -213,6 +224,12 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
         return Ok(with_status(
             html("Database error"),
             StatusCode::INTERNAL_SERVER_ERROR,
+        ));
+    }
+    if err.find::<NoSessionToken>().is_some() {
+        return Ok(with_status(
+            html("Invalid or expired session"),
+            StatusCode::UNAUTHORIZED,
         ));
     }
     if err.find::<UnderAuthenticated>().is_some() {
