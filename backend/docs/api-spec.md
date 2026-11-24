@@ -254,3 +254,102 @@ Không sử dụng
 | Tên trường | Kiểu dữ liệu                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------                                             |
 | `fees`     | \[{ amount: `integer`, paid: `bool`, optional: `bool`, type-name: `string`, created-at: `unixtime`, due-on: `unixtime` }\] |
+
+# Liệt kê thông tin chi tiết một căn hộ
+
+## Yêu cầu
+
+| Trường       | Thông tin                                        |
+| ------------ | ------------------------------------------------ |
+| Mức xác thực | `Admin`/`Resident` nếu thuộc căn hộ được tra cứu |
+| Phương thức  | `GET`                                            |
+| Endpoint     | `/api/apartment/{apartment_id}/info`             |
+
+**Ghi chú**: `apartment_id` là id căn hộ hợp lệ
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại               | Phản hồi |
+| ---------------------------- | -------- |
+| `apartment_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+| Tên trường    | Kiểu dữ liệu  |
+| ------------- | ------------- |
+| `type`        | `string`      |
+| `area`        | `float`       |
+| `service_fee` | `integer`     |
+| `residents`   | \[`integer`\] |
+
+# Tạo hồ sơ một cư dân
+
+## Yêu cầu
+
+| Trường       | Thông tin           |
+| ------------ | ------------------- |
+| Mức xác thực | `Admin`             |
+| Phương thức  | `POST`              |
+| Endpoint     | `/api/resident/new` |
+
+## Thân yêu cầu
+
+| Tên trường      | Kiểu dữ liệu | Ghi chú                                |
+| --------------- | ------------ | -------------------------------------- |
+| `name`          | `string`     |                                        |
+| `gender`        | `integer`    | Phải đã được định nghĩa                |
+| `date_of_birth` | `datetime`   |                                        |
+| `moved_in`      | `datetime`   |                                        |
+| `moved_out`     | `datetime`   | Tùy chọn                               |
+| `spouse_of`     | `integer`    | Phải là một id cư dân hợp lệ, tùy chọn |
+| `child_of`      | `integer`    | Phải là một id cư dân hơp lệ, tùy chọn |
+| `apartment`     | `integer`    | Phải là một id căn hộ hợp lệ           |
+
+## Thất bại
+
+| Lý do thất bại                | Phản hồi |
+| ----------------------------- | -------- |
+| `gender` chưa được định nghĩa | HTTP 400 |
+| `spouse_of` không tồn tại     | HTTP 404 |
+| `child_of` không tồn tại      | HTTP 404 |
+| `apartment` không tồn tại     | HTTP 404 |
+
+## Thân phản hồi
+
+Không sử dụng
+
+# Lấy thông tin chi tiết một dân cư
+
+## Yêu cầu
+
+| Trường       | Thông tin                                                     |
+| ------------ | ------------------------------------------------------------- |
+| Mức xác thực | `Admin`/`Resident` nếu là/cùng hộ khẩu với người đang tra cứu |
+| Phương thức  | `GET`                                                         |
+| Endpoint     | `/api/resident/{resident_id}/info`                            |
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại              | Phản hồi |
+| --------------------------- | -------- |
+| `resident_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+| Tên trường      | Kiểu dữ liệu |
+| --------------- | ------------ |
+| `name`          | `string`     |
+| `gender`        | `integer`    |
+| `date_of_birth` | `datetime`   |
+| `moved_in`      | `datetime`   |
+| `moved_out`     | `datetime`   |
+| `spouse_of`     | `integer`    |
+| `child_of`      | `integer`    |
