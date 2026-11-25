@@ -254,10 +254,7 @@ impl Database {
     /// # Panics
     ///
     /// Will panic if all writes succeeded but committing them fail
-    pub async fn modify_fee(
-        &self,
-        request: FeeModificationRequest,
-    ) -> Result<(), DatabaseError> {
+    pub async fn modify_fee(&self, request: FeeModificationRequest) -> Result<(), DatabaseError> {
         const MODIFY_AMOUNT: &str =
             "update Fees set amount = ? where type_id = ? and apartment_id = ?";
         const MODIFY_STATUS: &str =
