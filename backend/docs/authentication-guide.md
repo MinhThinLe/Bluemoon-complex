@@ -6,20 +6,28 @@ Trước khi xác thực với máy chủ, đảm bảo rằng có ít nhất m�
 
 ```toml
 [users]
-admin = "mật khẩu ở đây"
+admin = "<SHA-256 của mật khẩu, mã hóa Base64>"
 # ^       ^
 # |       |
 # |      Mật khẩu băm bằng sha256 và mã hóa với base64
 # Tên người dùng
 ```
 
-Mật khẩu có thể được tạo bằng lệnh sau, giả sử openssl đã được cài đặt trên thiết bị của bạn
+Trên Git Bash hoặc Linux/macOS, tạo giá trị từ mật khẩu bạn chọn bằng OpenSSL:
 
 ```
 printf "password" | openssl sha256 -binary | base64 -
 ```
 
-Thay `password` bằng mật khẩu bạn muốn đặt
+Trên Windows PowerShell:
+
+```powershell
+$demoPassword = "password"
+$sha256 = [Security.Cryptography.SHA256]::Create()
+[Convert]::ToBase64String($sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($demoPassword)))
+```
+
+Thay `password` bằng mật khẩu bạn muốn đặt rồi chép kết quả vào `[users]` của `backend/config.local.toml`. Giữ mật khẩu và file cấu hình local ở máy của bạn.
 
 # Xác thực
 
@@ -29,4 +37,4 @@ Về cơ bản, các yêu cầu chưa được xác thực sẽ nhận lại ph�
 
 Sau đó, gửi một yêu cầu bất kỳ đến máy chủ với header `Authorization` được đính kèm. Nội dung của header này chứa ở trong tài liệu đã nhắc đến trên.
 
-Nếu người dùng cung cấp thông tin đăng nhập không hợp lệ, máy chủ sẽ trả về phản hồi 401, ngược lại, nếu thông tin đăng nhập hợp lệ, phản hồi 200 sẽ được gửi cùng với một cookie. Trong các yêu cầu tiếp theo, máy chủ sẽ dùng cookie này để xác thực.
+Thông tin đăng nhập sai nhận phản hồi 403. Đăng nhập hợp lệ nhận phản hồi 200 cùng cookie `Session-Token`; các yêu cầu tiếp theo dùng cookie này để xác thực. Phiên thiếu hoặc đã hết hạn nhận 401. Frontend gửi thông tin đăng nhập tới `POST /api/session` và gọi `POST /api/logout` khi đăng xuất.

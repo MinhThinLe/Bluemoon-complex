@@ -38,27 +38,27 @@ Tài liệu tham khảo:
 
 ## 3. Lấy mã nguồn dự án
 
-Nếu máy chưa có source code, mở Git Bash/PowerShell tại thư mục muốn lưu dự án và clone nhánh Frontend đang phát triển:
+Nếu máy chưa có source code, mở Git Bash/PowerShell tại thư mục muốn lưu dự án và clone `main`:
 
 ```bash
-git clone --branch feat/frontend-ui https://github.com/MinhThinLe/Bluemoon-complex.git
-cd Bluemoon-complex
+git clone https://github.com/MinhThinLe/IT3180-SE_03.git
+cd IT3180-SE_03
 ```
 
 Nếu repository là private, tài khoản GitHub của bạn cần được cấp quyền truy cập. Có thể dùng SSH thay cho HTTPS nếu máy đã cấu hình SSH key với GitHub.
 
-Nếu đã clone repository trước đó, không cần clone lại. Mở Terminal tại thư mục repository và chuyển sang nhánh làm việc:
+Nếu đã clone repository trước đó, không cần clone lại. Mở Terminal tại thư mục repository và cập nhật `main`:
 
 ```bash
-git switch feat/frontend-ui
-git pull origin feat/frontend-ui
+git switch main
+git pull origin main
 ```
 
 Lệnh `git pull` nên chạy khi working tree không có thay đổi chưa commit; hãy commit hoặc cất tạm các thay đổi cá nhân trước nếu Git cảnh báo sẽ ghi đè file.
 
 ## 4. Mở đúng thư mục Frontend
 
-Từ thư mục gốc `Bluemoon-complex`, di chuyển vào `frontend`:
+Từ thư mục gốc `IT3180-SE_03`, di chuyển vào `frontend`:
 
 ```bash
 cd frontend
@@ -144,7 +144,7 @@ Các lệnh kiểm tra cũng có thể dùng `node --version` và `npm.cmd --ver
 Terminal đang đứng sai thư mục. Chuyển vào thư mục `frontend` của repository rồi chạy lại lệnh:
 
 ```powershell
-cd "duong-dan-den\Bluemoon-complex\frontend"
+cd "duong-dan-den\IT3180-SE_03\frontend"
 ```
 
 Thay phần đường dẫn mẫu bằng đường dẫn thật trên máy.
@@ -174,7 +174,7 @@ Dùng địa chỉ `Local` mà Vite in ra trong Terminal; không bắt buộc ph
 **Tóm tắt cho thành viên đã cài Node.js:**
 
 ```bash
-cd Bluemoon-complex/frontend
+cd IT3180-SE_03/frontend
 npm ci
 npm run dev
 ```
