@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use rusqlite::{Connection, Error, params};
+use rusqlite::{Connection, Error, ErrorCode, params};
 
 use tokio::sync::Mutex;
 
@@ -22,6 +22,7 @@ pub struct Database {
 #[derive(Debug)]
 pub enum DatabaseError {
     NoRowsAltered,
+    ConstraintViolation,
     SQLite(Error),
 }
 
@@ -29,6 +30,12 @@ impl Reject for DatabaseError {}
 
 impl From<Error> for DatabaseError {
     fn from(value: Error) -> Self {
+        if let Error::SqliteFailure(code, ref _message) = value
+            && code.code == ErrorCode::ConstraintViolation
+        {
+            return Self::ConstraintViolation;
+        }
+
         Self::SQLite(value)
     }
 }
@@ -228,7 +235,12 @@ impl Database {
         const QUERY: &str = "delete from Fees where type_id = (?);";
 
         let database = self.connection.lock().await;
-        Ok(database.execute(QUERY, params![fee_type]).map(|_| ())?)
+        let rows_altered = database.execute(QUERY, params![fee_type])?;
+        if rows_altered == 0 {
+            Err(DatabaseError::NoRowsAltered)?
+        }
+
+        Ok(())
     }
 
     /// Modify a fee record in the database if and only if its new value is set to `Option::Some`,
@@ -245,7 +257,7 @@ impl Database {
     pub async fn modify_fee(
         &self,
         request: FeeModificationRequest,
-    ) -> Result<usize, DatabaseError> {
+    ) -> Result<(), DatabaseError> {
         const MODIFY_AMOUNT: &str =
             "update Fees set amount = ? where type_id = ? and apartment_id = ?";
         const MODIFY_STATUS: &str =
@@ -280,7 +292,11 @@ impl Database {
 
         transaction.commit()?;
 
-        Ok(modified)
+        if modified == 0 {
+            Err(DatabaseError::NoRowsAltered)?;
+        }
+
+        Ok(())
     }
 
     /// Get every aparment on a specified floor
