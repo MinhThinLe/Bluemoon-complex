@@ -1,18 +1,19 @@
 use std::convert::Infallible;
 use std::future::ready;
 
-use bluemoon_authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
-};
 use http::StatusCode;
 
+use log::error;
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
 use warp::reject::Rejection;
-use warp::reply::{Reply, html, with_header, with_status};
+use warp::reply::{Html, Reply, WithStatus, html, with_header, with_status};
 use warp::{Filter, path};
 
+use bluemoon_authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+};
 use bluemoon_database::{
     Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
 };
@@ -209,7 +210,7 @@ impl Server {
 }
 
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
-    use log::{error, warn};
+    use log::warn;
     use warp::reject::MethodNotAllowed;
 
     if err.is_not_found() {
@@ -220,11 +221,7 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     }
 
     if let Some(db_err) = err.find::<DatabaseError>() {
-        error!("Database error: {db_err:?}");
-        return Ok(with_status(
-            html("Database error"),
-            StatusCode::INTERNAL_SERVER_ERROR,
-        ));
+        return Ok(handle_database_error(db_err));
     }
     if err.find::<NoSessionToken>().is_some() {
         return Ok(with_status(
@@ -241,4 +238,17 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
 
     warn!("Unhandled rejection: {err:?}");
     Err(err)
+}
+
+fn handle_database_error(db_err: &DatabaseError) -> WithStatus<Html<&'static str>> {
+    let (code, message) = match db_err {
+        DatabaseError::NoRowsAltered => (StatusCode::NOT_FOUND, "No rows changed"),
+        DatabaseError::ConstraintViolation => (StatusCode::BAD_REQUEST, "Invalid input supplied"),
+        DatabaseError::SQLite(db_err) => {
+            error!("Database error: {db_err:?}");
+            (StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        }
+    };
+
+    with_status(html(message), code)
 }
