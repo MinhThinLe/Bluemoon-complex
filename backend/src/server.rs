@@ -242,9 +242,8 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
 
 fn handle_database_error(db_err: &DatabaseError) -> WithStatus<Html<&'static str>> {
     let (code, message) = match db_err {
-        DatabaseError::NoRowsAltered | DatabaseError::ConstraintViolation => {
-            (StatusCode::BAD_REQUEST, "Invalid input supplied")
-        }
+        DatabaseError::NoRowsAltered => (StatusCode::NOT_FOUND, "No rows changed"),
+        DatabaseError::ConstraintViolation => (StatusCode::BAD_REQUEST, "Invalid input supplied"),
         DatabaseError::SQLite(db_err) => {
             error!("Database error: {db_err:?}");
             (StatusCode::INTERNAL_SERVER_ERROR, "Database error")
