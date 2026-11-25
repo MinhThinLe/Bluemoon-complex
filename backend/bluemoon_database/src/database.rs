@@ -237,7 +237,7 @@ impl Database {
         let database = self.connection.lock().await;
         let rows_altered = database.execute(QUERY, params![fee_type])?;
         if rows_altered == 0 {
-            Err(DatabaseError::NoRowsAltered)?
+            Err(DatabaseError::NoRowsAltered)?;
         }
 
         Ok(())
