@@ -4,12 +4,19 @@ export function getFeeTypes() {
   return apiRequest('/fee-types').then((payload) => Array.isArray(payload) ? payload : payload?.['fee-types'] ?? [])
 }
 
+export function createFeeType(name) {
+  return apiRequest('/new/fee-type', {
+    method: 'POST',
+    body: { name: name.trim() },
+  })
+}
+
 export function createFee({ amount, apartmentIds, feeTypeId, optional, dueOn }) {
   return apiRequest('/new/fee', {
     method: 'POST',
     body: {
       amount: Number(amount),
-      for: apartmentIds === 'all' ? 'all' : apartmentIds.map(Number),
+      ...(apartmentIds === 'all' ? {} : { for: apartmentIds.map(Number) }),
       type: Number(feeTypeId),
       optional: Boolean(optional),
       'due-on': Math.floor(new Date(`${dueOn}T23:59:59`).getTime() / 1000),

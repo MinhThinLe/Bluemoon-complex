@@ -7,6 +7,8 @@ export default function Button({
   icon,
   iconRight,
   block = false,
+  loading = false,
+  disabled = false,
   className = '',
   type = 'button',
   ...props
@@ -14,10 +16,12 @@ export default function Button({
   return (
     <button
       type={type}
+      disabled={loading || disabled}
+      aria-busy={loading || undefined}
       className={`bm-button bm-button--${variant} bm-button--${size} ${block ? 'bm-button--block' : ''} ${className}`.trim()}
       {...props}
     >
-      {icon && <Icon name={icon} size={17} />}
+      {loading ? <span className="bm-spinner" aria-hidden="true" /> : icon && <Icon name={icon} size={17} />}
       <span>{children}</span>
       {iconRight && <Icon name={iconRight} size={16} />}
     </button>

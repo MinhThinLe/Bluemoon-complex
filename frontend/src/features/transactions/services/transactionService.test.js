@@ -22,6 +22,7 @@ test('normalizes the backend apartment-fee response', () => {
   assert.equal(fee.apartment, 'BM-1208')
   assert.equal(fee.paid, false)
   assert.match(fee.dueDate, /^2026-11-/)
+  assert.equal(fee.period, 'Tháng 11/2026')
 })
 
 test('tolerates legacy hyphenated field names during the API rollout', () => {
