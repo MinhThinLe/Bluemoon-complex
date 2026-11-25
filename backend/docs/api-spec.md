@@ -16,15 +16,18 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 
 **Cheat sheet**
 
-| Đã cài đặt | Base URL                                                                 | Loại yêu cầu | Mô tả                            | Yêu cầu quyền |
-| ---------- | ------------------------------------------------------------------------ | ------------ | -------------------------------- | ------------- |
-| ✅         | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                               | POST         | Tạo loại khoản thu mới           | `Admin`       |
-| ✅         | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                  | GET          | Lấy danh sách loại khoản thu     | `Accountant`  |
-| ✅         | [`/api/new/fee`](#Tạo-khoản-thu)                                         | POST         | Tạo khoản thu mới                | `Admin`       |
-| ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                        | DELETE       | Xóa một khoản thu                | `Admin`       |
-| ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                       | POST         | Sửa một khoản thu                | `Admin`       |
-| ✅         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                             | GET          | Liệt kê các căn hộ ở một tầng    | `Accountant`  |
-| ✅         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ) | GET          | Lấy các khoản phí của một căn hộ | `Accountant`  |
+| Đã cài đặt | Base URL                                                                       | Loại yêu cầu | Mô tả                             | Yêu cầu quyền      |
+| ---------- | ------------------------------------------------------------------------------ | ------------ | --------------------------------- | ------------------ |
+| ✅         | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                     | POST         | Tạo loại khoản thu mới            | `Admin`            |
+| ✅         | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                        | GET          | Lấy danh sách loại khoản thu      | `Accountant`       |
+| ✅         | [`/api/new/fee`](#Tạo-khoản-thu)                                               | POST         | Tạo khoản thu mới                 | `Admin`            |
+| ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                              | DELETE       | Xóa một khoản thu                 | `Admin`            |
+| ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                             | POST         | Sửa một khoản thu                 | `Admin`            |
+| ✅         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                                   | GET          | Liệt kê các căn hộ ở một tầng     | `Accountant`       |
+| ✅         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)       | GET          | Lấy các khoản phí của một căn hộ  | `Accountant`       |
+| ❌         | [`/api/apartment/{apartment_id}/info`](#Liệt-kê-thông-tin-chi-tiết-một-căn-hộ) | GET          | Liệt kê chi tiết một căn hộ       | `Admin`/`Resident` |
+| ❌         | [`/api/resident/new`](#Tạo-hồ-sơ-một-cư-dân)                                   | POST         | Tạo hồ sơ một cu dân              | `Admin`            |
+| ❌         | [`/api/resident/{resident_id}/info`](#Lấy-thông-tin-chi-tiết-một-dân-cư)       | GET          | Lấy thông tin chi tiết một dân cư | `Admin`/`Resident` | 
 
 # Ký pháp
 
@@ -117,13 +120,15 @@ Không thể thất bại
 
 ## Thân yêu cầu
 
-| Tên trường | Kiểu dữ liệu         | Ghi chú                    |
-| ---------- | -------------------- | -------------------------- |
-| `amount`   | `number`             | > 0                        |
-| `for`      | "all" / \[`number`\] | Phải là id căn hộ hợp lệ   |
-| `type`     | `number`             | Phải là id loại phí hợp lệ |
-| `optional` | `bool`               |                            |
-| `due-on`   | `datetime`           |                            |
+| Tên trường | Kiểu dữ liệu         | Ghi chú                            |
+| ---------- | -------------------- | ---------------------------------- |
+| `amount`   | `number`             | > 0                                |
+| `for`      | \[`number`\]         | Tùy chọn, phải là id căn hộ hợp lệ |
+| `type`     | `number`             | Phải là id loại phí hợp lệ         |
+| `optional` | `bool`               |                                    |
+| `due-on`   | `datetime`           |                                    |
+
+**Ghi chú**: Để tạo khoản thu cho chỉ một số căn hộ nhất định, thêm trường `"for"` vào thân yêu cầu, trường hợp trường này trống, khoản phí sẽ được tạo cho tất cả các căn hộ.
 
 ## Thất bại
 
@@ -252,3 +257,102 @@ Không sử dụng
 | Tên trường | Kiểu dữ liệu                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------                                             |
 | `fees`     | \[{ amount: `integer`, paid: `bool`, optional: `bool`, type-name: `string`, created-at: `unixtime`, due-on: `unixtime` }\] |
+
+# Liệt kê thông tin chi tiết một căn hộ
+
+## Yêu cầu
+
+| Trường       | Thông tin                                        |
+| ------------ | ------------------------------------------------ |
+| Mức xác thực | `Admin`/`Resident` nếu thuộc căn hộ được tra cứu |
+| Phương thức  | `GET`                                            |
+| Endpoint     | `/api/apartment/{apartment_id}/info`             |
+
+**Ghi chú**: `apartment_id` là id căn hộ hợp lệ
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại               | Phản hồi |
+| ---------------------------- | -------- |
+| `apartment_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+| Tên trường    | Kiểu dữ liệu  |
+| ------------- | ------------- |
+| `type`        | `string`      |
+| `area`        | `float`       |
+| `service_fee` | `integer`     |
+| `residents`   | \[`integer`\] |
+
+# Tạo hồ sơ một cư dân
+
+## Yêu cầu
+
+| Trường       | Thông tin           |
+| ------------ | ------------------- |
+| Mức xác thực | `Admin`             |
+| Phương thức  | `POST`              |
+| Endpoint     | `/api/resident/new` |
+
+## Thân yêu cầu
+
+| Tên trường      | Kiểu dữ liệu | Ghi chú                                |
+| --------------- | ------------ | -------------------------------------- |
+| `name`          | `string`     |                                        |
+| `gender`        | `integer`    | Phải đã được định nghĩa                |
+| `date_of_birth` | `datetime`   |                                        |
+| `moved_in`      | `datetime`   |                                        |
+| `moved_out`     | `datetime`   | Tùy chọn                               |
+| `spouse_of`     | `integer`    | Phải là một id cư dân hợp lệ, tùy chọn |
+| `child_of`      | `integer`    | Phải là một id cư dân hơp lệ, tùy chọn |
+| `apartment`     | `integer`    | Phải là một id căn hộ hợp lệ           |
+
+## Thất bại
+
+| Lý do thất bại                | Phản hồi |
+| ----------------------------- | -------- |
+| `gender` chưa được định nghĩa | HTTP 400 |
+| `spouse_of` không tồn tại     | HTTP 404 |
+| `child_of` không tồn tại      | HTTP 404 |
+| `apartment` không tồn tại     | HTTP 404 |
+
+## Thân phản hồi
+
+Không sử dụng
+
+# Lấy thông tin chi tiết một dân cư
+
+## Yêu cầu
+
+| Trường       | Thông tin                                                     |
+| ------------ | ------------------------------------------------------------- |
+| Mức xác thực | `Admin`/`Resident` nếu là/cùng hộ khẩu với người đang tra cứu |
+| Phương thức  | `GET`                                                         |
+| Endpoint     | `/api/resident/{resident_id}/info`                            |
+
+## Thân yêu cầu
+
+Không sử dụng
+
+## Thất bại
+
+| Lý do thất bại              | Phản hồi |
+| --------------------------- | -------- |
+| `resident_id` không tồn tại | HTTP 404 |
+
+## Thân phản hồi
+
+| Tên trường      | Kiểu dữ liệu |
+| --------------- | ------------ |
+| `name`          | `string`     |
+| `gender`        | `integer`    |
+| `date_of_birth` | `datetime`   |
+| `moved_in`      | `datetime`   |
+| `moved_out`     | `datetime`   |
+| `spouse_of`     | `integer`    |
+| `child_of`      | `integer`    |

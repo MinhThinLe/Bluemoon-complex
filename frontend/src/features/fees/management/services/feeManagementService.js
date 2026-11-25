@@ -16,7 +16,7 @@ export function createFee({ amount, apartmentIds, feeTypeId, optional, dueOn }) 
     method: 'POST',
     body: {
       amount: Number(amount),
-      for: apartmentIds === 'all' ? 'all' : apartmentIds.map(Number),
+      ...(apartmentIds === 'all' ? {} : { for: apartmentIds.map(Number) }),
       type: Number(feeTypeId),
       optional: Boolean(optional),
       'due-on': Math.floor(new Date(`${dueOn}T23:59:59`).getTime() / 1000),

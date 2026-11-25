@@ -19,6 +19,7 @@ const iconShapes = {
   file: <><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" /><path d="M14 3v6h6M8 13h8M8 17h6" /></>,
   send: <><path d="m21 3-7.5 18-3.5-7-7-3.5L21 3Z" /><path d="M10 14 21 3" /></>,
   close: <path d="m6 6 12 12M18 6 6 18" />,
+  logOut: <><path d="M10 17l5-5-5-5M15 12H3" /><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></>,
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1Z" /></>,
   receipt: <><path d="M5 3h14v18l-3-2-4 2-4-2-3 2Z" /><path d="M8 8h8M8 12h8M8 16h4" /></>,
   car: <><path d="m5 11 1.5-5h11L19 11l2 2v5h-2M3 18v-5l2-2" /><path d="M5 11h14M7 18h10M6 18v2M18 18v2" /><circle cx="7" cy="15" r="1" /><circle cx="17" cy="15" r="1" /></>,

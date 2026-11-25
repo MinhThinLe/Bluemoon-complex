@@ -1,20 +1,19 @@
 use std::convert::Infallible;
 use std::future::ready;
 
-use bluemoon_authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
-};
 use http::StatusCode;
 
-use serde_json::Value;
-
+use log::error;
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
 use warp::reject::Rejection;
-use warp::reply::{Reply, html, with_header, with_status};
+use warp::reply::{Html, Reply, WithStatus, html, with_header, with_status};
 use warp::{Filter, path};
 
+use bluemoon_authentication::{
+    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+};
 use bluemoon_database::{
     Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
 };
@@ -54,7 +53,9 @@ impl Server {
             .or(self.clone().edit_fee())
             .or(self.clone().get_apartments())
             .or(self.clone().get_apartment_fees())
+            .or(self.clone().current_session())
             .or(self.clone().process_authentication())
+            .or(self.clone().logout())
             .or(self.request_authentication())
     }
 
@@ -123,7 +124,7 @@ impl Server {
             .and(path(API_ROOT_URL))
             .and(path!("new" / "fee"))
             .and(warp::body::content_length_limit(1024))
-            .and(warp::body::json().map(|json: Value| FeeAdditionRequest::try_from(json)))
+            .and(warp::body::json::<FeeAdditionRequest>())
             .and(self.clone().inject())
             .and(self.clone().auth_token())
             .and_then(|fee, server: Server, token| server.new_fee_handle(token, fee))
@@ -141,6 +142,16 @@ impl Server {
             .and_then(|request, server: Server, privilege_level| {
                 server.edit_fee_handle(privilege_level, request)
             })
+            .recover(handle_rejection)
+    }
+
+    fn current_session(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::get()
+            .and(path(API_ROOT_URL))
+            .and(path!("session"))
+            .and(self.clone().inject())
+            .and(cookie("Session-Token"))
+            .and_then(|server: Server, token: String| server.users.current_session_handle(token))
             .recover(handle_rejection)
     }
 
@@ -182,14 +193,24 @@ impl Server {
 
     async fn extract_token(self, token: String) -> Result<PrivilegeLevel, Rejection> {
         self.users
-            .authenticated_as(AuthenticationToken::new(&token))
+            .authenticated_as(AuthenticationToken::new(token))
             .await
             .ok_or_else(|| Rejection::from(NoSessionToken))
+    }
+
+    fn logout(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+        method::post()
+            .and(path(API_ROOT_URL))
+            .and(path!("logout"))
+            .and(self.clone().inject())
+            .and(cookie("Session-Token"))
+            .and_then(|server: Server, token| server.users.logout_handle(token))
+            .recover(handle_rejection)
     }
 }
 
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
-    use log::{error, warn};
+    use log::warn;
     use warp::reject::MethodNotAllowed;
 
     if err.is_not_found() {
@@ -199,11 +220,13 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
         return Err(err);
     }
 
-    if let Some(DatabaseError(db_err)) = err.find() {
-        error!("Database error: {db_err}");
+    if let Some(db_err) = err.find::<DatabaseError>() {
+        return Ok(handle_database_error(db_err));
+    }
+    if err.find::<NoSessionToken>().is_some() {
         return Ok(with_status(
-            html("Database error"),
-            StatusCode::INTERNAL_SERVER_ERROR,
+            html("Invalid or expired session"),
+            StatusCode::UNAUTHORIZED,
         ));
     }
     if err.find::<UnderAuthenticated>().is_some() {
@@ -215,4 +238,17 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
 
     warn!("Unhandled rejection: {err:?}");
     Err(err)
+}
+
+fn handle_database_error(db_err: &DatabaseError) -> WithStatus<Html<&'static str>> {
+    let (code, message) = match db_err {
+        DatabaseError::NoRowsAltered => (StatusCode::NOT_FOUND, "No rows changed"),
+        DatabaseError::ConstraintViolation => (StatusCode::BAD_REQUEST, "Invalid input supplied"),
+        DatabaseError::SQLite(db_err) => {
+            error!("Database error: {db_err:?}");
+            (StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        }
+    };
+
+    with_status(html(message), code)
 }

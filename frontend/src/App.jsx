@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import LogoutControl from './features/auth/components/LogoutControl.jsx'
 import LoginPage from './features/auth/pages/LoginPage.jsx'
 import WelcomePage from './features/welcome/pages/WelcomePage.jsx'
 import FeeManagementPage from './features/fees/management/pages/FeeManagementPage.jsx'
@@ -15,15 +16,20 @@ const NAV_ITEMS = [
 function App() {
   const [needsLogin, setNeedsLogin] = useState(true)
   const [showWelcome, setShowWelcome] = useState(true)
-  const [sessionVersion, setSessionVersion] = useState(0)
   const [activePage, setActivePage] = useState('management')
   const [queryContext, setQueryContext] = useState({ apartmentId: null, selectedFeeIds: [] })
 
+  const requireLogin = useCallback(() => {
+    setNeedsLogin(true)
+    setShowWelcome(false)
+    setActivePage('management')
+    setQueryContext({ apartmentId: null, selectedFeeIds: [] })
+  }, [])
+
   useEffect(() => {
-    const requireLogin = () => { setNeedsLogin(true); setShowWelcome(false) }
     window.addEventListener('bluemoon:unauthorized', requireLogin)
     return () => window.removeEventListener('bluemoon:unauthorized', requireLogin)
-  }, [])
+  }, [requireLogin])
 
   if (needsLogin) {
     if (showWelcome) return <WelcomePage onStart={() => setShowWelcome(false)} />
@@ -32,7 +38,6 @@ function App() {
       setShowWelcome(false)
       setActivePage('management')
       setQueryContext({ apartmentId: null, selectedFeeIds: [] })
-      setSessionVersion((current) => current + 1)
     }} />
   }
 
@@ -42,7 +47,7 @@ function App() {
   }
   const lookupActive = ['selection', 'query'].includes(activePage)
 
-  return <div key={sessionVersion} className="bm-app-shell">
+  return <div className="bm-app-shell">
     <nav className="bm-app-nav" aria-label="Điều hướng chính">
       <div className="bm-app-nav__inner">
         <div className="bm-app-nav__brand"><Icon name="moon" size={24} /><span>bluemoon</span></div>
@@ -55,7 +60,7 @@ function App() {
             onClick={() => setActivePage(item.id === 'lookup' ? 'selection' : item.id)}
           >{item.label}</button>)}
         </div>
-        <div className="bm-app-nav__session"><span>Phiên làm việc hiện tại</span><span className="bm-app-nav__avatar"><Icon name="user" size={16} /></span></div>
+        <div className="bm-app-nav__session"><LogoutControl onLogout={requireLogin} /></div>
       </div>
     </nav>
 

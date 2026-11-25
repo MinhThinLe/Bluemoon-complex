@@ -1,8 +1,9 @@
-(import ./lib.nix) {
+{ inputs, pkgs, }:
+pkgs.testers.runNixOSTest {
     name = "from-nixos";
     nodes = {
-        node1 = { self, pkgs, ... }: {
-            imports = [ self.nixosModules.bluemoon-backend ];
+        node1 = { pkgs, ... }: {
+            imports = [ inputs.self.nixosModules.default ];
             environment.systemPackages = [ pkgs.curl ];
 
             services.bluemoon-backend = {
@@ -32,5 +33,9 @@
         output = node1.succeed("${../tests/add-fee-type.sh}")
         # Adding the same fee type-twice should fail
         output = node1.fail("${../tests/add-fee-type.sh}")
+
+        output = node1.succeed("${../tests/fee-addition.sh}")
+        output = node1.succeed("${../tests/logout.sh}")
+        output = node1.succeed("${../tests/stale-token.sh}")
     '';
 }

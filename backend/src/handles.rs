@@ -1,13 +1,12 @@
-use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
 use http::StatusCode;
 
 use serde_json::json;
 use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
+use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
 use bluemoon_database::{
-    ApartmentId, Apartments, FeeAdditionError, FeeAdditionRequest, FeeModificationRequest, FeeType,
-    FeeTypeId,
+    ApartmentId, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
 };
 
 use crate::Server;
@@ -20,16 +19,6 @@ impl Server {
     ) -> Result<impl Reply, Rejection> {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
-        }
-
-        if self
-            .database
-            .get_all_fee_types()
-            .await?
-            .iter()
-            .any(|item| item.name == fee_type.name)
-        {
-            return Ok(with_status("Duplicate fee type", StatusCode::BAD_REQUEST));
         }
 
         Ok(self
@@ -55,62 +44,19 @@ impl Server {
     pub async fn new_fee_handle(
         self,
         privilege: PrivilegeLevel,
-        fee: Result<FeeAdditionRequest, FeeAdditionError>,
+        request: FeeAdditionRequest,
     ) -> Result<impl Reply, Rejection> {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
         }
 
-        let fee = match fee {
-            Ok(fee) => fee,
-            Err(error) => {
-                return Ok(with_status(
-                    error.rejection_message(),
-                    StatusCode::BAD_REQUEST,
-                ));
+        Ok(match self.database.add_fee(request).await {
+            Ok(()) => with_status("Success", StatusCode::OK),
+            Err(DatabaseError::NoRowsAltered) => {
+                with_status("Invalid apartment id list supplied", StatusCode::NOT_FOUND)
             }
-        };
-
-        let (apartment_ids, all_ids_valid) = {
-            let mut apartment_ids = self.database.get_all_apartment_id().await?;
-            let all_ids_valid = match fee.for_apartments {
-                Apartments::All => true,
-                Apartments::Some(ref ids) => {
-                    if ids.iter().all(|id| apartment_ids.contains(id)) {
-                        apartment_ids.clone_from(ids);
-                        true
-                    } else {
-                        false
-                    }
-                }
-            };
-
-            (apartment_ids, all_ids_valid)
-        };
-
-        if !all_ids_valid {
-            return Ok(with_status(
-                "Invalid Id list supplied".to_string(),
-                StatusCode::BAD_REQUEST,
-            ));
-        }
-
-        if !self
-            .database
-            .get_all_fee_types()
-            .await?
-            .iter()
-            .any(|fee_type| fee_type.id == fee.type_id)
-        {
-            return Ok(with_status(
-                "Invalid Id supplied".to_string(),
-                StatusCode::BAD_REQUEST,
-            ));
-        }
-
-        self.database.add_fee(fee, &apartment_ids).await?;
-
-        Ok(with_status("Success".to_string(), StatusCode::OK))
+            Err(other) => Err(other)?,
+        })
     }
 
     pub async fn delete_fee_handle(
@@ -120,19 +66,6 @@ impl Server {
     ) -> Result<impl Reply, Rejection> {
         if privilege < PrivilegeLevel::Admin {
             Err(UnderAuthenticated)?;
-        }
-
-        if !self
-            .database
-            .get_all_fee_types()
-            .await?
-            .iter()
-            .any(|fee_type| fee_type.id == fee_type_id)
-        {
-            return Ok(with_status(
-                html("Fee type id doesn't exist"),
-                StatusCode::NOT_FOUND,
-            ));
         }
 
         Ok(self
@@ -151,16 +84,7 @@ impl Server {
             Err(UnderAuthenticated)?;
         }
 
-        if let Some(amount) = request.amount
-            && amount <= 0
-        {
-            return Ok(with_status("Invalid amount", StatusCode::BAD_REQUEST));
-        }
-
-        if self.database.modify_fee(request).await? == 0 {
-            return Ok(with_status("No records altered", StatusCode::NOT_FOUND));
-        }
-
+        self.database.modify_fee(request).await?;
         Ok(with_status("Modify OK", StatusCode::OK))
     }
 
@@ -169,16 +93,8 @@ impl Server {
         privilege: PrivilegeLevel,
         floor: i32,
     ) -> Result<impl Reply, Rejection> {
-        const FLOOR_LIMIT: i32 = 30;
         if privilege < PrivilegeLevel::Accountant {
             Err(UnderAuthenticated)?;
-        }
-
-        if !(0..=FLOOR_LIMIT).contains(&floor) {
-            return Ok(with_status(
-                json(&json!({ "error": "Invalid floor" })),
-                StatusCode::BAD_REQUEST,
-            ));
         }
 
         Ok(self
