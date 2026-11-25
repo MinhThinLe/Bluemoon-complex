@@ -1,30 +1,35 @@
-> Backend của công cụ quản lý chung cư Bluemoon
+# Backend Bluemoon
 
-# Công cụ
+Backend viết bằng Rust, dùng SQLite. Cài [Rust toolchain](https://rustup.rs/) trước khi chạy.
 
-Repo con này sử dụng các công cụ sau
-- [Sleek](https://github.com/nrempel/sleek) Định dạng SQL
-- [Rustfmt](https://github.com/rust-lang/rustfmt) Định dạng Rust
-- [Clippy](https://github.com/rust-lang/rust-clippy) Linter
-- [Rust-analyzer] LSP server
-- [Cargo](https://github.com/rust-lang/cargo) Quản lý gói, Build system, Chạy test, Tạo tài liệu và tất cả mọi thứ liên quan khác
+Từ thư mục gốc của dự án, tạo file `backend/config.local.toml` với nội dung sau. Thay giá trị trong dấu `<...>` bằng mã băm của mật khẩu bạn chọn theo [hướng dẫn tạo tài khoản](docs/authentication-guide.md):
 
-# Phát triển
+```toml
+[server]
+listen_address = "127.0.0.1:3030"
 
-Bước 0: Cài đặt Rust toolchain tại [Rustup](https://rustup.rs/)
+[database]
+path = "./bluemoon.db"
 
-Bước 1: Clone repo này với git
-
-```
-git clone https://github.com/MinhThinLe/Bluemoon-complex
+[users]
+admin = "<SHA-256 của mật khẩu, mã hóa Base64>"
 ```
 
-Bước 2: Mở dự án trong code/text editor của bạn
+Sau đó chạy:
 
-Bước 3: Mở terminal
+```bash
+cd backend
+cargo run -- --config-file config.local.toml
+```
 
-Bước 4: Chạy `cargo run`
+Đường dẫn database tương đối được tính từ thư mục đang chạy lệnh, trong ví dụ là `backend`. Backend sẽ tạo file SQLite nếu chưa có, nhưng database mới chưa có căn hộ hoặc khoản thu để demo. Hãy dùng database demo đã chuẩn bị hoặc nhập dữ liệu phù hợp trước buổi trình bày. Giữ file cấu hình local và file SQLite chứa dữ liệu riêng ở máy của bạn. Xem thêm [chi tiết cấu hình](../docs/server-configuration.md).
 
-# Chạy
+Giữ terminal backend đang chạy, rồi mở terminal khác để [chạy frontend](../frontend/RUN.md). Vite chuyển tiếp `/api` tới `127.0.0.1:3030`.
 
-Coming soon™
+Kiểm tra backend trong thư mục `backend`:
+
+```bash
+cargo fmt --check
+cargo test
+cargo clippy --all
+```

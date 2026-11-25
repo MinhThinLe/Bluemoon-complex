@@ -29,10 +29,11 @@ Sao chép `.env.example` thành `.env.local` nếu cần đổi địa chỉ API
 VITE_API_URL=/api
 ```
 
-Frontend hiện có các màn hình quản lý khoản thu, chọn khoản chưa nộp và tra cứu
-khoản cần nộp/đã nộp. Hai màn hình chọn/tra cứu sử dụng các API căn hộ và khoản
-thu hiện có; quyền truy cập cần Accountant trở lên. Backend chưa cung cấp API
-thanh toán hoặc lưu yêu cầu tra cứu, vì vậy các thao tác này chưa được thực hiện.
+Frontend có trang Welcome, đăng nhập, quản lý khoản thu, tra cứu và đăng xuất.
+Trong mục Tra cứu khoản thu, người dùng chọn căn hộ và khoản chưa nộp trước khi
+xem chi tiết. Các bước chọn/tra cứu dùng API căn hộ và khoản thu, yêu cầu quyền
+Accountant trở lên. Backend hiện chưa cung cấp API thanh toán hoặc lưu yêu cầu
+tra cứu, nên giao diện không thực hiện các thao tác đó.
 
 Các lệnh kiểm tra trước khi tạo Pull Request:
 
@@ -48,4 +49,7 @@ Giao diện desktop dựa trên [bản Figma đã duyệt](https://www.figma.com
 
 Bốn màn dùng chung tokens trong `src/index.css` và component ở `src/components/ui`. Chọn khoản và tra cứu dùng `useApartmentFees` để quản lý loading, lỗi, retry và hủy kết quả request cũ khi đổi căn hộ. Lỗi tải không hiển thị thành số dư 0 hoặc danh sách rỗng. Màn nhỏ dùng danh sách thẻ cho khoản thu ở trang tra cứu; các bảng còn lại cuộn ngang khi cần.
 
-Luồng xác thực, cookie và endpoint hiện có được giữ nguyên. Giao diện không chứa dữ liệu mẫu từ prototype. Lịch sử quản lý chỉ tồn tại trong phiên, và việc chọn khoản chỉ chuyển sang tra cứu, không thực hiện thanh toán. Font tải từ Google Fonts; nếu không có mạng trình duyệt dùng font hệ thống thay thế.
+Luồng đăng nhập dùng cookie phiên và nút đăng xuất gọi `POST /api/logout`.
+Giao diện không chứa dữ liệu mẫu từ prototype. Lịch sử quản lý chỉ tồn tại
+trong phiên, và việc chọn khoản chỉ chuyển sang tra cứu, không thực hiện thanh
+toán. Font tải từ Google Fonts; nếu không có mạng trình duyệt dùng font hệ thống thay thế.
