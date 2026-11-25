@@ -287,11 +287,11 @@ impl Database {
             )?;
         }
 
-        transaction.commit()?;
-
         if modified == 0 {
             Err(DatabaseError::NoRowsAltered)?;
         }
+
+        transaction.commit()?;
 
         Ok(())
     }
