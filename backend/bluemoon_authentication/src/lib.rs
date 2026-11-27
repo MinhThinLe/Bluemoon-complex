@@ -1,6 +1,8 @@
 #![deny(clippy::pedantic, clippy::complexity, clippy::perf)]
 #![allow(clippy::cast_possible_truncation)]
 
+mod salt;
+
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::fmt;
@@ -8,13 +10,7 @@ use std::hash::Hash;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use base64::Engine;
-
-use base64::prelude::BASE64_STANDARD;
 use http::StatusCode;
-
-use rand::Rng;
-use sha2::{Digest, Sha256};
 
 use tokio::sync::RwLock;
 
@@ -22,6 +18,8 @@ use warp::reject::{Reject, Rejection};
 use warp::reply::{Reply, Response, html, with_header, with_status};
 
 use bluemoon_database::Database;
+
+use crate::salt::{random_base64_string, salt_and_hash};
 
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
@@ -115,15 +113,9 @@ impl AuthenticationToken {
     }
 
     fn generate() -> Self {
-        const DESIRED_TOKEN_LENGTH: usize = 64;
-        const BASE64_DATA_DENSITY: usize = 6;
-        const BITS_PER_BYTE: usize = 8;
-        let mut data = [0u8; DESIRED_TOKEN_LENGTH * BASE64_DATA_DENSITY / BITS_PER_BYTE];
-
-        rand::rng().fill_bytes(&mut data);
-
-        let encoded = BASE64_STANDARD.encode(data);
-        AuthenticationToken(encoded)
+        const TOKEN_LENGTH: usize = 64;
+        let token = random_base64_string(TOKEN_LENGTH);
+        AuthenticationToken(token)
     }
 }
 
@@ -151,9 +143,7 @@ impl AuthenticatedUsers {
             return Ok(invalid_credentials());
         };
 
-        let salted_password = format!("{}{}", credentials.password, user.salt);
-        let hashed_password = BASE64_STANDARD.encode(Sha256::digest(salted_password));
-
+        let hashed_password = salt_and_hash(&user.salt, &credentials.password);
         if hashed_password != user.hashed_password {
             return Ok(invalid_credentials());
         }
@@ -219,6 +209,8 @@ fn invalid_credentials() -> Response {
 }
 
 fn process_login(auth: &str) -> Option<Credential> {
+    use base64::prelude::{BASE64_STANDARD, Engine};
+
     let (auth_type, auth_key) = auth.split_once(' ')?;
     if !auth_type.eq_ignore_ascii_case("basic") {
         return None;
