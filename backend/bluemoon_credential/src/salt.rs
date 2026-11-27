@@ -11,8 +11,7 @@ pub fn random_base64_string(length: usize) -> String {
 
     rand::rng().fill_bytes(&mut data);
 
-    let encoded = BASE64_STANDARD.encode(data);
-    encoded
+    BASE64_STANDARD.encode(data)
 }
 
 pub fn salt_and_hash(salt: &str, password: &str) -> String {
