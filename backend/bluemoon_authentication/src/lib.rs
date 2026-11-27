@@ -135,7 +135,6 @@ impl AuthenticatedUsers {
         };
 
         let hashed_password = salt_and_hash(&user.salt, credential.password());
-        println!("expected: {}, got: {hashed_password}", user.hashed_password);
         if hashed_password != user.hashed_password {
             return Ok(invalid_credentials());
         }

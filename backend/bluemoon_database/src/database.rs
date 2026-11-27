@@ -363,10 +363,6 @@ impl Database {
                 (?       , ?           , ?              , ?   , ?      );
             ";
 
-        println!(
-            "Trying to create an account with password set to {}",
-            request.password
-        );
         let salt = random_base64_string(SALT_LENGTH);
         let hashed_password = salt_and_hash(&salt, &request.password);
 

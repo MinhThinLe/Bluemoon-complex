@@ -15,7 +15,6 @@ pub fn random_base64_string(length: usize) -> String {
 }
 
 pub fn salt_and_hash(salt: &str, password: &str) -> String {
-    println!("password: {password}, salt: {salt}");
     let salted = format!("{password}{salt}");
     BASE64_STANDARD.encode(Sha256::digest(salted))
 }
