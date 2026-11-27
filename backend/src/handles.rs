@@ -4,7 +4,7 @@ use serde_json::json;
 use warp::reject::Rejection;
 use warp::reply::{Reply, html, json, with_status};
 
-use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
+use bluemoon_authentication::{AuthenticationError, PrivilegeLevel};
 use bluemoon_database::{
     ApartmentId, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
 };
@@ -17,8 +17,8 @@ impl Server {
         privilege: PrivilegeLevel,
         fee_type: FeeType,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Admin {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Admin {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         Ok(self
@@ -32,8 +32,8 @@ impl Server {
         self,
         privilege: PrivilegeLevel,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Accountant {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Accountant && privilege != PrivilegeLevel::Admin {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         let fee_types = self.database.get_all_fee_types().await?;
@@ -46,8 +46,8 @@ impl Server {
         privilege: PrivilegeLevel,
         request: FeeAdditionRequest,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Admin {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Admin {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         Ok(match self.database.add_fee(request).await {
@@ -64,8 +64,8 @@ impl Server {
         privilege: PrivilegeLevel,
         fee_type_id: FeeTypeId,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Admin {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Admin {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         Ok(self
@@ -80,8 +80,8 @@ impl Server {
         privilege: PrivilegeLevel,
         request: FeeModificationRequest,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Admin {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Accountant {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         self.database.modify_fee(request).await?;
@@ -93,8 +93,8 @@ impl Server {
         privilege: PrivilegeLevel,
         floor: i32,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Accountant {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Admin {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         Ok(self
@@ -109,8 +109,8 @@ impl Server {
         privilege: PrivilegeLevel,
         apartment_id: ApartmentId,
     ) -> Result<impl Reply, Rejection> {
-        if privilege < PrivilegeLevel::Accountant {
-            Err(UnderAuthenticated)?;
+        if privilege != PrivilegeLevel::Accountant {
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         let content = self.database.get_apartment_fees(apartment_id).await?;
