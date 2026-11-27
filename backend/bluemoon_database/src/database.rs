@@ -271,19 +271,19 @@ impl Database {
         if let Some(new_amount) = request.amount {
             modified += transaction.execute(
                 MODIFY_AMOUNT,
-                params![new_amount, request.type_id, request.apartment_id],
+                params![new_amount, request.id, request.apartment_id],
             )?;
         }
         if let Some(new_status) = request.paid {
             modified += transaction.execute(
                 MODIFY_STATUS,
-                params![new_status, request.type_id, request.apartment_id],
+                params![new_status, request.id, request.apartment_id],
             )?;
         }
         if let Some(new_optional) = request.optional {
             modified += transaction.execute(
                 MODIFY_OPTIONAL,
-                params![new_optional, request.type_id, request.apartment_id],
+                params![new_optional, request.id, request.apartment_id],
             )?;
         }
 
