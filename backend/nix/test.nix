@@ -37,5 +37,7 @@ pkgs.testers.runNixOSTest {
         output = node1.succeed("${../tests/fee-addition.sh}")
         output = node1.succeed("${../tests/logout.sh}")
         output = node1.succeed("${../tests/stale-token.sh}")
+
+        output = node1.succeed("${../tests/user-addition.sh}")
     '';
 }

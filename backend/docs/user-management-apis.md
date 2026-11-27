@@ -15,7 +15,7 @@ Toàn bộ các API sắp được mô tả sau đây chỉ có thể được s
 | Trường      | Thông tin       |
 | ----------- | --------------- |
 | Phương thức | `POST`          |
-| Endpoint    | `/api/user/new` |
+| Endpoint    | `/api/new/user` |
 
 ## Thân yêu cầu
 
@@ -46,7 +46,7 @@ Không sử dụng
 | Trường      | Thông tin          |
 | ----------- | ------------------ |
 | Phương thức | `DELETE`           |
-| Endpoint    | `/api/user/delete` |
+| Endpoint    | `/api/delete/user` |
 
 ## Thân yêu cầu
 

@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 
 pub type FeeTypeId = i32;
 pub type ApartmentId = i32;
+pub type RoleId = i32;
+pub type UserId = i32;
+
 pub type UnixTime = i64;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -73,4 +76,17 @@ impl DatabaseConfig {
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct UserAdditionRequest {
+    pub username: String,
+    #[serde(skip_serializing)]
+    pub password: String,
+    #[serde(skip)]
+    pub salt: String,
+    pub display_name: String,
+    pub role: RoleId,
+    pub belongs_to: Option<UserId>,
 }

@@ -20,7 +20,7 @@ use bluemoon_database::{
 
 use crate::config::ServerConfig;
 
-const API_ROOT_URL: &str = "api";
+pub const API_ROOT_URL: &str = "api";
 
 #[derive(Clone)]
 pub struct Server {
@@ -53,6 +53,7 @@ impl Server {
             .or(self.clone().edit_fee())
             .or(self.clone().get_apartments())
             .or(self.clone().get_apartment_fees())
+            .or(self.clone().user_handles())
             .or(self.clone().current_session())
             .or(self.clone().process_authentication())
             .or(self.clone().logout())
@@ -181,13 +182,13 @@ impl Server {
         ready(Ok(reply)).await
     }
 
-    fn auth_token(self) -> impl Filter<Extract = (PrivilegeLevel,), Error = Rejection> + Clone {
+    pub fn auth_token(self) -> impl Filter<Extract = (PrivilegeLevel,), Error = Rejection> + Clone {
         self.inject()
             .and(cookie("Session-Token"))
             .and_then(Self::extract_token)
     }
 
-    fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
+    pub fn inject(self) -> impl Filter<Extract = (Self,), Error = Infallible> + Clone {
         warp::any().map(move || self.clone())
     }
 
@@ -209,7 +210,7 @@ impl Server {
     }
 }
 
-async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
+pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     use log::warn;
     use warp::reject::MethodNotAllowed;
 

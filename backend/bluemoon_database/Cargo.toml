@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bluemoon_credential = { path = "../bluemoon_credential" }
 rusqlite = {
     version = "0.41.1",
     default-features = false,

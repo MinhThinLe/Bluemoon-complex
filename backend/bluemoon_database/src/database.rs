@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use bluemoon_credential::{random_base64_string, salt_and_hash};
 use rusqlite::{Connection, Error, ErrorCode, params};
 
 use tokio::sync::Mutex;
@@ -9,7 +10,7 @@ use warp::reject::Reject;
 
 use crate::tables::{
     Apartment, ApartmentId, DatabaseConfig, Fee, FeeAdditionRequest, FeeModificationRequest,
-    FeeType, FeeTypeId, User,
+    FeeType, FeeTypeId, RoleId, User, UserAdditionRequest,
 };
 
 /// A thin wrapper for Rusqlite's Sqlite connection, shareable between threads though only one could
@@ -60,39 +61,6 @@ impl Database {
         Ok(Self {
             connection: Arc::new(Mutex::new(connection)),
         })
-    }
-
-    /// Add an admin user to the database
-    ///
-    /// # Panics
-    ///
-    /// Will panic if the database contains garbage data
-    pub async fn add_admin_users(&self, users: &[User]) {
-        const INSERT_QUERY: &str = "
-                insert or ignore into Users
-                (username, display_name, hashed_password, salt, role_id) values
-                (?       , ?           , ?              , ?   , ?      );
-            ";
-
-        let database = self.connection.lock().await;
-        let admin_role_id: u32 = database
-            .query_one("SELECT id FROM Roles WHERE name = 'admin'", (), |row| {
-                row.get(0)
-            })
-            .expect("No admin id");
-
-        let mut statement = database.prepare(INSERT_QUERY).expect("Invalid SQL");
-        for user in users {
-            statement
-                .execute((
-                    user.username.clone(),
-                    user.username.clone(),
-                    user.hashed_password.clone(),
-                    "",
-                    admin_role_id,
-                ))
-                .expect("Failed to add an admin");
-        }
     }
 
     /// Fetch a user, given their username from the database
@@ -376,6 +344,65 @@ impl Database {
             .map(|item| item.map_err(DatabaseError::from))
             .collect()
     }
+
+    pub async fn add_user(&self, request: UserAdditionRequest) -> Result<(), DatabaseError> {
+        const SALT_LENGTH: usize = 12;
+        const QUERY: &str = "
+                insert into Users
+                (username, display_name, hashed_password, salt, role_id) values
+                (?       , ?           , ?              , ?   , ?      );
+            ";
+
+            println!("Trying to create an account with password set to {}", request.password);
+        let salt = random_base64_string(SALT_LENGTH);
+        let hashed_password = salt_and_hash(&salt, &request.password);
+
+        let database = self.connection.lock().await;
+        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
+
+        statement.execute(params![
+            request.username,
+            request.display_name,
+            hashed_password,
+            salt,
+            request.role
+        ])?;
+
+        Ok(())
+    }
+
+    pub async fn add_admin_users(&self, users: &[User]) {
+        // This is technically a duplicate of the method `Database::add_user` but the
+        // former method generates its own salt to hash the password with whereas this
+        // function takes an already hashed password. Changing the requirement to use
+        // unhashed password would require storing the default password in plain-text,
+        // which is definitely less desireable than having a separate method for it.
+        const QUERY: &str = "
+                insert or ignore into Users
+                (username, display_name, hashed_password, salt, role_id) values
+                (?       , ?           , ?              , ?   , ?      );
+            ";
+        let database = self.connection.lock().await;
+        let admin_role_id = get_admin_role_id(&database);
+        let mut statement = database.prepare(QUERY).expect("Invalid SQL");
+        users.iter().for_each(|user| {
+            let _err = statement.execute(params![
+                user.username,
+                user.username,
+                user.hashed_password,
+                "",
+                admin_role_id
+            ]);
+        });
+    }
+}
+
+fn get_admin_role_id(database: &Connection) -> RoleId {
+    database
+        .query_one("select id from Roles where name = 'admin'", (), |row| {
+            row.get(0)
+        })
+        .expect("No admin id")
 }
 
 fn get_all_apartment_ids(connection: &Connection) -> Result<Vec<ApartmentId>, DatabaseError> {

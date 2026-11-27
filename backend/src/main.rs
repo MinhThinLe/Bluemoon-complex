@@ -5,6 +5,7 @@ mod config;
 mod handles;
 mod logger;
 mod server;
+mod users;
 
 use log::error;
 
