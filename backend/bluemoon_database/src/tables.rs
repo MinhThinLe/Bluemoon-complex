@@ -38,9 +38,9 @@ pub struct FeeAdditionRequest {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
 pub struct FeeModificationRequest {
-    #[serde(rename = "id")]
-    pub type_id: FeeTypeId,
+    pub id: FeeTypeId,
     pub apartment_id: ApartmentId,
     pub paid: Option<bool>,
     pub optional: Option<bool>,

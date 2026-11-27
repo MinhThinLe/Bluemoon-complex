@@ -21,13 +21,13 @@ Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví d�
 | ✅         | [`/api/new/fee-type`](#Tạo-loại-khoản-thu)                                     | POST         | Tạo loại khoản thu mới            | `Admin`            |
 | ✅         | [`/api/fee-types`](#Lấy-loại-khoản-thu)                                        | GET          | Lấy danh sách loại khoản thu      | `Accountant`       |
 | ✅         | [`/api/new/fee`](#Tạo-khoản-thu)                                               | POST         | Tạo khoản thu mới                 | `Admin`            |
-| ✅         | [`/api/delete/fee/{fee_type_id}`](#Xóa-khoản-thu)                              | DELETE       | Xóa một khoản thu                 | `Admin`            |
+| ✅         | [`/api/delete/fee/{fee-type-id}`](#Xóa-khoản-thu)                              | DELETE       | Xóa một khoản thu                 | `Admin`            |
 | ✅         | [`/api/edit/fee/`](#Sửa-khoản-thu)                                             | POST         | Sửa một khoản thu                 | `Admin`            |
 | ✅         | [`/api/apartments/{floor}`](#Liệt-kê-căn-hộ)                                   | GET          | Liệt kê các căn hộ ở một tầng     | `Accountant`       |
-| ✅         | [`/api/fee/apartment/{apartment_id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)       | GET          | Lấy các khoản phí của một căn hộ  | `Accountant`       |
-| ❌         | [`/api/apartment/{apartment_id}/info`](#Liệt-kê-thông-tin-chi-tiết-một-căn-hộ) | GET          | Liệt kê chi tiết một căn hộ       | `Admin`/`Resident` |
+| ✅         | [`/api/fee/apartment/{apartment-id}`](#Liệt-kê-các-khoản-phí-của-căn-hộ)       | GET          | Lấy các khoản phí của một căn hộ  | `Accountant`       |
+| ❌         | [`/api/apartment/{apartment-id}/info`](#Liệt-kê-thông-tin-chi-tiết-một-căn-hộ) | GET          | Liệt kê chi tiết một căn hộ       | `Admin`/`Resident` |
 | ❌         | [`/api/resident/new`](#Tạo-hồ-sơ-một-cư-dân)                                   | POST         | Tạo hồ sơ một cu dân              | `Admin`            |
-| ❌         | [`/api/resident/{resident_id}/info`](#Lấy-thông-tin-chi-tiết-một-dân-cư)       | GET          | Lấy thông tin chi tiết một dân cư | `Admin`/`Resident` | 
+| ❌         | [`/api/resident/{resident-id}/info`](#Lấy-thông-tin-chi-tiết-một-dân-cư)       | GET          | Lấy thông tin chi tiết một dân cư | `Admin`/`Resident` | 
 
 # Ký pháp
 
@@ -150,9 +150,9 @@ Không sử dụng
 | ------------ | ------------------------------- |
 | Mức xác thực | `Admin`                         |
 | Phương thức  | `DELETE`                        |
-| Endpoint     | `/api/delete/fee/{fee_type_id}` |
+| Endpoint     | `/api/delete/fee/{fee-type-id}` |
 
-**Ghi chú**: `fee_type_id` là id loại khoản thu hợp lệ.
+**Ghi chú**: `fee-type-id` là id loại khoản thu hợp lệ.
 
 ## Thân yêu cầu
 
@@ -162,7 +162,7 @@ Không sử dụng
 
 | Lý do thất bại              | Phản hồi |
 | --------------------------- | -------- |
-| `fee_type_id` không tồn tại | HTTP 404 |
+| `fee-type-id` không tồn tại | HTTP 404 |
 
 ## Thân phản hồi
 
@@ -183,12 +183,12 @@ Không sử dụng
 | Tên trường     | Kiểu dữ liệu | Ghi chú         |
 | -------------- | ------------ | --------------- |
 | `id`           | `integer`    | Phải đã tồn tại |
-| `apartment_id` | `integer`    | Phải đã tồn tại |
+| `apartment-id` | `integer`    | Phải đã tồn tại |
 | `paid`         | `bool`       | Tùy chọn        |
 | `optional`     | `bool`       | Tùy chọn        |
 | `amount`       | `integer`    | Tùy chọn        |
 
-**Ghi chú**: Yêu cầu sửa khoản phí phải đi kèm với `apartment_id` nhằm giới hạn số lượng bản ghi sẽ thay đổi thành (xấp xỉ) 1. Bản thân việc thay đổi khoản thu nên hiếm khi xảy ra (~5 lần/hộ/tháng) và rủi ro nếu xảy ra nhầm lẫn (con người hoặc mã nguồn) là khá lớn. 
+**Ghi chú**: Yêu cầu sửa khoản phí phải đi kèm với `apartment-id` nhằm giới hạn số lượng bản ghi sẽ thay đổi thành (xấp xỉ) 1. Bản thân việc thay đổi khoản thu nên hiếm khi xảy ra (~5 lần/hộ/tháng) và rủi ro nếu xảy ra nhầm lẫn (con người hoặc mã nguồn) là khá lớn. 
 
 Việc sửa tên khoản thu là bất khả thi do tên của khoản thu không được lưu trong bản ghi khoản thu. Giả sử như việc sửa tên khoản thu có khả thi, việc chỉ cần sửa tên khoản thu của một số hộ không nên xảy ra.
 
@@ -238,9 +238,9 @@ Không sử dụng
 | ------------ | ------------------------------------ |
 | Mức xác thực | `Accountant`                         |
 | Phương thức  | `GET`                                |
-| Endpoint     | `/api/fee/apartment/{apartment_id}`  |
+| Endpoint     | `/api/fee/apartment/{apartment-id}`  |
 
-**Ghi chú**: `apartment_id` là id căn hộ hợp lệ
+**Ghi chú**: `apartment-id` là id căn hộ hợp lệ
 
 ## Thân yêu cầu
 
@@ -250,7 +250,7 @@ Không sử dụng
 
 | Lý do thất bại               | Phản hồi |
 | ---------------------------- | -------- |
-| `apartment_id` không tồn tại | HTTP 404 |
+| `apartment-id` không tồn tại | HTTP 404 |
 
 ## Thân phản hồi
 
@@ -266,9 +266,9 @@ Không sử dụng
 | ------------ | ------------------------------------------------ |
 | Mức xác thực | `Admin`/`Resident` nếu thuộc căn hộ được tra cứu |
 | Phương thức  | `GET`                                            |
-| Endpoint     | `/api/apartment/{apartment_id}/info`             |
+| Endpoint     | `/api/apartment/{apartment-id}/info`             |
 
-**Ghi chú**: `apartment_id` là id căn hộ hợp lệ
+**Ghi chú**: `apartment-id` là id căn hộ hợp lệ
 
 ## Thân yêu cầu
 
@@ -278,7 +278,7 @@ Không sử dụng
 
 | Lý do thất bại               | Phản hồi |
 | ---------------------------- | -------- |
-| `apartment_id` không tồn tại | HTTP 404 |
+| `apartment-id` không tồn tại | HTTP 404 |
 
 ## Thân phản hồi
 
@@ -286,7 +286,7 @@ Không sử dụng
 | ------------- | ------------- |
 | `type`        | `string`      |
 | `area`        | `float`       |
-| `service_fee` | `integer`     |
+| `service-fee` | `integer`     |
 | `residents`   | \[`integer`\] |
 
 # Tạo hồ sơ một cư dân
@@ -305,11 +305,11 @@ Không sử dụng
 | --------------- | ------------ | -------------------------------------- |
 | `name`          | `string`     |                                        |
 | `gender`        | `integer`    | Phải đã được định nghĩa                |
-| `date_of_birth` | `datetime`   |                                        |
-| `moved_in`      | `datetime`   |                                        |
-| `moved_out`     | `datetime`   | Tùy chọn                               |
-| `spouse_of`     | `integer`    | Phải là một id cư dân hợp lệ, tùy chọn |
-| `child_of`      | `integer`    | Phải là một id cư dân hơp lệ, tùy chọn |
+| `date-of-birth` | `datetime`   |                                        |
+| `moved-in`      | `datetime`   |                                        |
+| `moved-out`     | `datetime`   | Tùy chọn                               |
+| `spouse-of`     | `integer`    | Phải là một id cư dân hợp lệ, tùy chọn |
+| `child-of`      | `integer`    | Phải là một id cư dân hơp lệ, tùy chọn |
 | `apartment`     | `integer`    | Phải là một id căn hộ hợp lệ           |
 
 ## Thất bại
@@ -317,8 +317,8 @@ Không sử dụng
 | Lý do thất bại                | Phản hồi |
 | ----------------------------- | -------- |
 | `gender` chưa được định nghĩa | HTTP 400 |
-| `spouse_of` không tồn tại     | HTTP 404 |
-| `child_of` không tồn tại      | HTTP 404 |
+| `spouse-of` không tồn tại     | HTTP 404 |
+| `child-of` không tồn tại      | HTTP 404 |
 | `apartment` không tồn tại     | HTTP 404 |
 
 ## Thân phản hồi
@@ -333,7 +333,7 @@ Không sử dụng
 | ------------ | ------------------------------------------------------------- |
 | Mức xác thực | `Admin`/`Resident` nếu là/cùng hộ khẩu với người đang tra cứu |
 | Phương thức  | `GET`                                                         |
-| Endpoint     | `/api/resident/{resident_id}/info`                            |
+| Endpoint     | `/api/resident/{resident-id}/info`                            |
 
 ## Thân yêu cầu
 
@@ -343,7 +343,7 @@ Không sử dụng
 
 | Lý do thất bại              | Phản hồi |
 | --------------------------- | -------- |
-| `resident_id` không tồn tại | HTTP 404 |
+| `resident-id` không tồn tại | HTTP 404 |
 
 ## Thân phản hồi
 
@@ -351,8 +351,8 @@ Không sử dụng
 | --------------- | ------------ |
 | `name`          | `string`     |
 | `gender`        | `integer`    |
-| `date_of_birth` | `datetime`   |
-| `moved_in`      | `datetime`   |
-| `moved_out`     | `datetime`   |
-| `spouse_of`     | `integer`    |
-| `child_of`      | `integer`    |
+| `date-of-birth` | `datetime`   |
+| `moved-in`      | `datetime`   |
+| `moved-out`     | `datetime`   |
+| `spouse-of`     | `integer`    |
+| `child-of`      | `integer`    |
