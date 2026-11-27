@@ -5,7 +5,4 @@ mod database;
 mod tables;
 
 pub use database::{Database, DatabaseError};
-pub use tables::{
-    ApartmentId, DatabaseConfig, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeError,
-    FeeTypeId, User,
-};
+pub use tables::*;

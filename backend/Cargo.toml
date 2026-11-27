@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
-    "bluemoon_authentication",
+    "bluemoon_authentication", "bluemoon_credential",
     "bluemoon_database",
 ]
 

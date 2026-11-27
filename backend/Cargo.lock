@@ -47,19 +47,27 @@ dependencies = [
 name = "bluemoon_authentication"
 version = "0.1.0"
 dependencies = [
- "base64",
+ "bluemoon_credential",
  "bluemoon_database",
  "http",
- "rand",
- "sha2",
  "tokio",
  "warp",
+]
+
+[[package]]
+name = "bluemoon_credential"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "rand",
+ "sha2",
 ]
 
 [[package]]
 name = "bluemoon_database"
 version = "0.1.0"
 dependencies = [
+ "bluemoon_credential",
  "rusqlite",
  "serde",
  "tokio",

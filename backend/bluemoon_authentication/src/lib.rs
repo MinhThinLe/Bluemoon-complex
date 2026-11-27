@@ -8,13 +8,8 @@ use std::hash::Hash;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use base64::Engine;
-
-use base64::prelude::BASE64_STANDARD;
+use bluemoon_credential::{Credential, random_base64_string, salt_and_hash};
 use http::StatusCode;
-
-use rand::Rng;
-use sha2::{Digest, Sha256};
 
 use tokio::sync::RwLock;
 
@@ -25,11 +20,6 @@ use bluemoon_database::Database;
 
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
-
-pub struct Credential {
-    username: String,
-    password: String,
-}
 
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
 pub enum PrivilegeLevel {
@@ -115,15 +105,8 @@ impl AuthenticationToken {
     }
 
     fn generate() -> Self {
-        const DESIRED_TOKEN_LENGTH: usize = 64;
-        const BASE64_DATA_DENSITY: usize = 6;
-        const BITS_PER_BYTE: usize = 8;
-        let mut data = [0u8; DESIRED_TOKEN_LENGTH * BASE64_DATA_DENSITY / BITS_PER_BYTE];
-
-        rand::rng().fill_bytes(&mut data);
-
-        let encoded = BASE64_STANDARD.encode(data);
-        AuthenticationToken(encoded)
+        const TOKEN_LENGTH: usize = 64;
+        AuthenticationToken(random_base64_string(TOKEN_LENGTH))
     }
 }
 
@@ -143,17 +126,15 @@ impl AuthenticatedUsers {
         request: String,
         database: Database,
     ) -> Result<impl Reply, Infallible> {
-        let Some(credentials) = process_login(&request) else {
+        let Ok(credential) = request.parse::<Credential>() else {
             return Ok(invalid_credentials());
         };
 
-        let Some(user) = database.get_user(&credentials.username).await else {
+        let Some(user) = database.get_user(credential.username()).await else {
             return Ok(invalid_credentials());
         };
 
-        let salted_password = format!("{}{}", credentials.password, user.salt);
-        let hashed_password = BASE64_STANDARD.encode(Sha256::digest(salted_password));
-
+        let hashed_password = salt_and_hash(&user.salt, credential.password());
         if hashed_password != user.hashed_password {
             return Ok(invalid_credentials());
         }
@@ -216,22 +197,4 @@ fn invalid_credentials() -> Response {
     let reply = with_status(reply_content, StatusCode::FORBIDDEN);
 
     reply.into_response()
-}
-
-fn process_login(auth: &str) -> Option<Credential> {
-    let (auth_type, auth_key) = auth.split_once(' ')?;
-    if !auth_type.eq_ignore_ascii_case("basic") {
-        return None;
-    }
-
-    let credentials = BASE64_STANDARD.decode(auth_key).ok()?;
-
-    let stringified = String::from_utf8(credentials).ok()?;
-
-    let (username, password) = stringified.split_once(':')?;
-
-    Some(Credential {
-        username: username.trim().to_string(),
-        password: password.trim().to_string(),
-    })
 }
