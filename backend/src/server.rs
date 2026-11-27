@@ -3,7 +3,7 @@ use std::future::ready;
 
 use http::StatusCode;
 
-use log::error;
+use log::{error, warn};
 use warp::filters::cookie::cookie;
 use warp::filters::header::header;
 use warp::filters::method;
@@ -12,7 +12,7 @@ use warp::reply::{Html, Reply, WithStatus, html, with_header, with_status};
 use warp::{Filter, path};
 
 use bluemoon_authentication::{
-    AuthenticatedUsers, AuthenticationToken, NoSessionToken, PrivilegeLevel, UnderAuthenticated,
+    AuthenticatedUsers, AuthenticationError, AuthenticationToken, PrivilegeLevel,
 };
 use bluemoon_database::{
     Database, DatabaseError, FeeAdditionRequest, FeeModificationRequest, FeeType, FeeTypeId,
@@ -196,7 +196,7 @@ impl Server {
         self.users
             .authenticated_as(AuthenticationToken::new(token))
             .await
-            .ok_or_else(|| Rejection::from(NoSessionToken))
+            .ok_or_else(|| Rejection::from(AuthenticationError::NoSessionToken))
     }
 
     fn logout(self) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -211,7 +211,6 @@ impl Server {
 }
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
-    use log::warn;
     use warp::reject::MethodNotAllowed;
 
     if err.is_not_found() {
@@ -224,20 +223,12 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     if let Some(db_err) = err.find::<DatabaseError>() {
         return Ok(handle_database_error(db_err));
     }
-    if err.find::<NoSessionToken>().is_some() {
-        return Ok(with_status(
-            html("Invalid or expired session"),
-            StatusCode::UNAUTHORIZED,
-        ));
-    }
-    if err.find::<UnderAuthenticated>().is_some() {
-        return Ok(with_status(
-            html("Under-authenticated"),
-            StatusCode::FORBIDDEN,
-        ));
+
+    if let Some(auth_error) = err.find::<AuthenticationError>() {
+        return Ok(handle_auth_error(auth_error));
     }
 
-    warn!("Unhandled rejection: {err:?}");
+    warn!("Unhandled rejection: {err:#?}");
     Err(err)
 }
 
@@ -248,6 +239,17 @@ fn handle_database_error(db_err: &DatabaseError) -> WithStatus<Html<&'static str
         DatabaseError::SQLite(db_err) => {
             error!("Database error: {db_err:?}");
             (StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        }
+    };
+
+    with_status(html(message), code)
+}
+
+fn handle_auth_error(auth_error: &AuthenticationError) -> WithStatus<Html<&'static str>> {
+    let (message, code) = match auth_error {
+        AuthenticationError::NoSessionToken => ("Invalid session cookie", StatusCode::UNAUTHORIZED),
+        AuthenticationError::UnderAuthenticated => {
+            ("Insufficient privilege", StatusCode::FORBIDDEN)
         }
     };
 

@@ -223,43 +223,18 @@ impl Database {
     ///
     /// Will panic if all writes succeeded but committing them fail
     pub async fn modify_fee(&self, request: FeeModificationRequest) -> Result<(), DatabaseError> {
-        const MODIFY_AMOUNT: &str =
-            "update Fees set amount = ? where type_id = ? and apartment_id = ?";
         const MODIFY_STATUS: &str =
             "update Fees set paid = ? where type_id = ? and apartment_id = ?";
-        const MODIFY_OPTIONAL: &str =
-            "update Fees set optional = ? where type_id = ? and apartment_id = ?";
 
-        let mut database = self.connection.lock().await;
-        let transaction = database
-            .transaction()
-            .expect("Unable to start a transaction");
+        let database = self.connection.lock().await;
 
-        let mut modified = 0;
-        if let Some(new_amount) = request.amount {
-            modified += transaction.execute(
-                MODIFY_AMOUNT,
-                params![new_amount, request.id, request.apartment_id],
-            )?;
-        }
-        if let Some(new_status) = request.paid {
-            modified += transaction.execute(
-                MODIFY_STATUS,
-                params![new_status, request.id, request.apartment_id],
-            )?;
-        }
-        if let Some(new_optional) = request.optional {
-            modified += transaction.execute(
-                MODIFY_OPTIONAL,
-                params![new_optional, request.id, request.apartment_id],
-            )?;
-        }
-
+        let modified = database.execute(
+            MODIFY_STATUS,
+            params![request.paid, request.id, request.apartment_id],
+        )?;
         if modified == 0 {
             Err(DatabaseError::NoRowsAltered)?;
         }
-
-        transaction.commit()?;
 
         Ok(())
     }

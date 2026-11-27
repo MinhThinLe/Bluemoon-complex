@@ -45,9 +45,7 @@ pub struct FeeAdditionRequest {
 pub struct FeeModificationRequest {
     pub id: FeeTypeId,
     pub apartment_id: ApartmentId,
-    pub paid: Option<bool>,
-    pub optional: Option<bool>,
-    pub amount: Option<i64>,
+    pub paid: bool,
 }
 
 #[derive(Serialize, Debug)]

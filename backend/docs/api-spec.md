@@ -10,9 +10,9 @@ Mọi yêu cầu để được coi là hợp lệ, phải được đi kèm v�
 
 Hiện tại, hệ thống tồn tại 3 vai trò với phân cấp như sau.
 
-`Admin` > `Accountant` > `Resident`
+`Admin`, `Accountant` và `Resident`
 
-Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví dụ người dùng đã xác thực với mức `Accountant` gọi phương thức cho `Admin`), sẽ nhận lại phản hồi HTTP 403 Forbidden.
+Với mọi yêu cầu, nếu như mức xác thực không thỏa mãn (ví dụ người dùng đã xác thực với mức `Accountant` gọi phương thức cho `Admin` và ngược lại), sẽ nhận lại phản hồi HTTP 403 Forbidden.
 
 **Cheat sheet**
 
@@ -170,6 +170,8 @@ Không sử dụng
 
 # Sửa khoản thu
 
+Sửa một khoản thu, dùng để đánh dấu rằng một khoản thu đã được nộp hay chưa. Đối với trường hợp lỗi người dùng, xóa khoản thu đó và tạo lại khoản thu mới.
+
 ## Yêu cầu
 
 | Trường       | Thông tin        |
@@ -184,9 +186,7 @@ Không sử dụng
 | -------------- | ------------ | --------------- |
 | `id`           | `integer`    | Phải đã tồn tại |
 | `apartment-id` | `integer`    | Phải đã tồn tại |
-| `paid`         | `bool`       | Tùy chọn        |
-| `optional`     | `bool`       | Tùy chọn        |
-| `amount`       | `integer`    | Tùy chọn        |
+| `paid`         | `bool`       |                 |
 
 **Ghi chú**: Yêu cầu sửa khoản phí phải đi kèm với `apartment-id` nhằm giới hạn số lượng bản ghi sẽ thay đổi thành (xấp xỉ) 1. Bản thân việc thay đổi khoản thu nên hiếm khi xảy ra (~5 lần/hộ/tháng) và rủi ro nếu xảy ra nhầm lẫn (con người hoặc mã nguồn) là khá lớn. 
 

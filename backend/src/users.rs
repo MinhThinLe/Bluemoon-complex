@@ -1,6 +1,8 @@
-use bluemoon_authentication::{PrivilegeLevel, UnderAuthenticated};
+use bluemoon_authentication::{AuthenticationError, PrivilegeLevel};
 use bluemoon_database::UserAdditionRequest;
+
 use http::StatusCode;
+
 use warp::filters::method;
 use warp::reject::Rejection;
 use warp::reply::{Reply, with_status};
@@ -30,7 +32,7 @@ impl Server {
         request: UserAdditionRequest,
     ) -> Result<impl Reply, Rejection> {
         if privilege != PrivilegeLevel::Admin {
-            Err(UnderAuthenticated)?;
+            Err(AuthenticationError::UnderAuthenticated)?;
         }
 
         self.database.add_user(request).await?;

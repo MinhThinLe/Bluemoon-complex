@@ -21,7 +21,7 @@ use bluemoon_database::Database;
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct AuthenticationToken(String);
 
-#[derive(Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum PrivilegeLevel {
     Resident,
     Accountant,
@@ -35,14 +35,12 @@ pub struct AuthenticatedUsers {
 }
 
 #[derive(Debug)]
-pub struct NoSessionToken;
+pub enum AuthenticationError {
+    NoSessionToken,
+    UnderAuthenticated,
+}
 
-impl Reject for NoSessionToken {}
-
-#[derive(Debug)]
-pub struct UnderAuthenticated;
-
-impl Reject for UnderAuthenticated {}
+impl Reject for AuthenticationError {}
 
 impl FromStr for PrivilegeLevel {
     type Err = ();
@@ -157,7 +155,7 @@ impl AuthenticatedUsers {
         let role = self
             .authenticated_as(AuthenticationToken::new(token))
             .await
-            .ok_or_else(|| Rejection::from(NoSessionToken))?;
+            .ok_or(AuthenticationError::NoSessionToken)?;
 
         Ok(with_status(role.to_string(), StatusCode::OK))
     }
@@ -171,7 +169,7 @@ impl AuthenticatedUsers {
         let token = AuthenticationToken::new(token);
 
         if self.revoke_token(&token).await.is_err() {
-            Err(NoSessionToken)?;
+            Err(AuthenticationError::NoSessionToken)?;
         }
 
         let reply = with_status("Logout successful", StatusCode::OK);
