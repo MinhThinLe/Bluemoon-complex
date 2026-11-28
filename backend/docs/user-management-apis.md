@@ -8,6 +8,15 @@ Tất cả các ký pháp sắp được sử dụng đã được mô tả tron
 
 Toàn bộ các API sắp được mô tả sau đây chỉ có thể được sử dụng nếu người dùng đã xác thực với tư cách `Admin`
 
+**Cheat sheet**
+
+| Đã cài đặt | Base URL                                  | Loại yêu cầu | Mô tả                    |
+| ---------- | ----------------------------------------- | ------------ | ------------------------ |
+| ✅         | [`/api/new/user`](#Tạo-người-dùng-mới)    | `POST`       | Tạo một người dùng mới   |
+| ❌         | [`/api/delete/user`](#Xóa-một-người-dùng) | `DELETE`     | Xóa một người dùng       |
+| ❌         | [`/api/users`](#Lấy-danh-sách-người-dùng) | `GET`        | Lấy danh sách người dùng |
+
+
 # Tạo người dùng mới
 
 ## Yêu cầu
@@ -68,10 +77,10 @@ Không sử dụng
 
 ## Yêu cầu
 
-| Trường | Thông tin |
-| --- | --- |
-| Phương thức | `GET` |
-| Endpoint | `/api/user/get` |
+| Trường      | Thông tin    |
+| ----------- | ------------ |
+| Phương thức | `GET`        |
+| Endpoint    | `/api/users` |
 
 ## Thân yêu cầu
 
