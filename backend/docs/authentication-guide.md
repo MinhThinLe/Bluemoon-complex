@@ -13,13 +13,13 @@ admin = "<SHA-256 của mật khẩu, mã hóa Base64>"
 # Tên người dùng
 ```
 
-Trên Git Bash hoặc Linux/macOS, tạo giá trị từ mật khẩu bạn chọn bằng OpenSSL:
+Giả sử openssl đã được cài đặt trên thiết bị Linux/MacOS(?) của bạn.
 
 ```
 printf "password" | openssl sha256 -binary | base64 -
 ```
 
-Trên Windows PowerShell:
+Trường hợp bạn dùng Windows, hãy sử dụng lệnh sau.
 
 ```powershell
 $demoPassword = "password"
@@ -27,7 +27,7 @@ $sha256 = [Security.Cryptography.SHA256]::Create()
 [Convert]::ToBase64String($sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($demoPassword)))
 ```
 
-Thay `password` bằng mật khẩu bạn muốn đặt rồi chép kết quả vào `[users]` của `backend/config.local.toml`. Giữ mật khẩu và file cấu hình local ở máy của bạn.
+Thay `password` bằng mật khẩu bạn muốn đặt rồi chép kết quả vào bảng `users` như được mô tả ở trên.
 
 # Xác thực
 
@@ -37,4 +37,4 @@ Về cơ bản, các yêu cầu chưa được xác thực sẽ nhận lại ph�
 
 Sau đó, gửi một yêu cầu bất kỳ đến máy chủ với header `Authorization` được đính kèm. Nội dung của header này chứa ở trong tài liệu đã nhắc đến trên.
 
-Thông tin đăng nhập sai nhận phản hồi 403. Đăng nhập hợp lệ nhận phản hồi 200 cùng cookie `Session-Token`; các yêu cầu tiếp theo dùng cookie này để xác thực. Phiên thiếu hoặc đã hết hạn nhận 401. Frontend gửi thông tin đăng nhập tới `POST /api/session` và gọi `POST /api/logout` khi đăng xuất.
+Trường hợp bạn đăng nhập thành công (mã phản hồi 200), máy chủ sẽ gửi một cookie `Session-Token`. Gửi kèm cookie này với mọi yêu cầu về sau để có thể sử dụng các API cần xác thực.
